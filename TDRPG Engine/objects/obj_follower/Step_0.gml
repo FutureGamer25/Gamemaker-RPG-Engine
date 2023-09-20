@@ -11,7 +11,7 @@ if (newPos > pos) {
 	char_sprite_state(charSprite, data.state);
 } else {
 	image_speed = 1;
-	char_sprite_state_delay(charSprite, "stand");
+	char_sprite_state_delay_frame(charSprite, "stand");
 }
 
 char_sprite_update(charSprite);

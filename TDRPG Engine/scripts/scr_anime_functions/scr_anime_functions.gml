@@ -1,4 +1,4 @@
-//feather disable all
+//eather disable all
 //inconsistent errors showing up
 function create_anime(start_val) {
 	var a = new __anime_class(start_val);
@@ -74,8 +74,7 @@ function __anime_class(start_val) constructor {
 	callback = function() {
 		frame ++;
 		var val = frame / maxFrames;
-		//feather disable once all
-		func(lerp_type(x1, x2, val, type));
+		if is_method(func) func(lerp_type(x1, x2, val, type));
 		if (val >= 1) {
 			if (!nextData()) stop();
 		}

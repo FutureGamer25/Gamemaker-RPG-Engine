@@ -29,10 +29,10 @@
     "PhysicsWorldPixToMetres": 0.1,
   },
   "roomSettings": {
-    "Height": 360,
+    "Height": 480,
     "inheritRoomSettings": false,
     "persistent": false,
-    "Width": 480,
+    "Width": 640,
   },
   "sequenceId": null,
   "views": [

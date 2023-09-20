@@ -51,7 +51,7 @@
   "isEcma": false,
   "LibraryEmitters": [],
   "MetaData": {
-    "IDEVersion": "2023.6.0.89",
+    "IDEVersion": "2023.8.1.102",
   },
   "resources": [
     {"id":{"name":"scr_pause_functions","path":"scripts/scr_pause_functions/scr_pause_functions.yy",},},
@@ -118,6 +118,7 @@
     {"id":{"name":"obj_potted_plant","path":"objects/obj_potted_plant/obj_potted_plant.yy",},},
     {"id":{"name":"lang_set_directory","path":"scripts/lang_set_directory/lang_set_directory.yy",},},
     {"id":{"name":"lang_get","path":"scripts/lang_get/lang_get.yy",},},
+    {"id":{"name":"game_get_max_scale","path":"scripts/game_get_max_scale/game_get_max_scale.yy",},},
     {"id":{"name":"scr_text_init","path":"scripts/scr_text_init/scr_text_init.yy",},},
     {"id":{"name":"spr_player_left","path":"sprites/spr_player_left/spr_player_left.yy",},},
     {"id":{"name":"lang_file_force_load","path":"scripts/lang_file_force_load/lang_file_force_load.yy",},},
@@ -152,6 +153,7 @@
     {"roomId":{"name":"Room2","path":"rooms/Room2/Room2.yy",},},
     {"roomId":{"name":"Room3","path":"rooms/Room3/Room3.yy",},},
   ],
+  "templateType": null,
   "TextureGroups": [
     {"resourceType":"GMTextureGroup","resourceVersion":"1.3","name":"Default","autocrop":true,"border":2,"compressFormat":"bz2","directory":"","groupParent":null,"isScaled":true,"loadType":"default","mipsToGenerate":0,"targets":-1,},
   ],

@@ -43,7 +43,7 @@ var moving = (moveX != 0 || moveY != 0);
 if moving {
 	char_sprite_state(charSprite, "walk");
 } else {
-	char_sprite_state_delay(charSprite, "stand");
+	char_sprite_state_delay_frame(charSprite, "stand");
 }
 
 char_sprite_dir(charSprite, horizontal, vertical);

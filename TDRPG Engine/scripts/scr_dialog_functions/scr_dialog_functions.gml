@@ -43,7 +43,7 @@ function dialog_func(name, func) {
 	global.dialog_data.func[$ name] = func;
 }
 
-function dialog_character(char_name, default_face_spr, default_talk_spr = default_face_spr, talk_sound = -1, face_struct) {
+function dialog_character(char_name, default_face_spr, default_talk_spr = default_face_spr, talk_sound = undefined, face_struct) {
 	global.dialog_data.char[$ char_name] = {
 		sound : talk_sound,
 		face : face_struct,

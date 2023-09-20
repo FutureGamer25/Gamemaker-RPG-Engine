@@ -18,5 +18,5 @@ follower_add();
 set_pause = function(_pause) {
 	pause = _pause;
 	running = false;
-	char_sprite_state_delay(charSprite, "stand");
+	char_sprite_state_delay_frame(charSprite, "stand");
 }
