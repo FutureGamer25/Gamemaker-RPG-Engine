@@ -1,9 +1,9 @@
-		   [test1] The quick brown dog jumped##like {shade, 2}really{/shade} high dude!!!!!! //dumbass
-	  second page##cool as ever!!!	
+		   [test1] The quick brown dog jumped\nlike {shade, 2}really{/shade} high dude!!!!!! //dumbass
+	  second page\ncool as ever!!!	
 	  " th "
 	  [test2]
 	  "[so coool//yass]" aioushf//kjasf
-[test3] "improve##your life"
+[test3] "improve\nyour life"
 [hi]
 welcome to hell
 #choice go to hell?

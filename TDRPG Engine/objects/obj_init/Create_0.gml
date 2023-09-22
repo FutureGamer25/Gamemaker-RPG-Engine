@@ -10,7 +10,7 @@ global.view_scale = 2;
 game_set_resolution(global.view_width, global.view_height, global.view_scale);
 #endregion
 
-lang_set_newline("##");
+lang_set_newline("\\n");
 lang_set_directory("english");
 lang_file_load("object_interactions.txt");
 

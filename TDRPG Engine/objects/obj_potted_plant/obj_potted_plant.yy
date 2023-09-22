@@ -9,8 +9,8 @@
     {"resourceType":"GMOverriddenProperty","resourceVersion":"1.0","name":"","objectId":{"name":"obj_basic_interactable","path":"objects/obj_basic_interactable/obj_basic_interactable.yy",},"propertyId":{"name":"dialog_key_2","path":"objects/obj_basic_interactable/obj_basic_interactable.yy",},"value":"potted_plant_2",},
   ],
   "parent": {
-    "name": "General",
-    "path": "folders/General.yy",
+    "name": "Objects",
+    "path": "folders/Objects.yy",
   },
   "parentObjectId": {
     "name": "obj_basic_interactable",
