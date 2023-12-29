@@ -15,7 +15,10 @@ for (var i=0; i<array_length(elements); i++) {
 }
 #endregion
 
+if drawDepth var dep = gpu_get_depth();
 while (!ds_priority_empty(priority)) {
 	var inst = ds_priority_delete_min(priority);
+	if drawDepth gpu_set_depth(-inst.y);
 	with inst event_perform(ev_draw, ev_draw_normal);
 }
+if drawDepth gpu_set_depth(dep);

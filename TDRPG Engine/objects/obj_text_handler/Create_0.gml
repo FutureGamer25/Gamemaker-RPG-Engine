@@ -1,9 +1,11 @@
-defaultSpeed = game_get_speed(gamespeed_fps) / 30;
-defaultStyle = "";
+defaultTypeSpeed = game_get_speed(gamespeed_fps) / 30;
 defaultNewlineStr = "";
+defaultTextTransform = undefined;
+defaultTextRender = undefined;
+textTransformStruct = {char: "A", x: 0, y: 0, xscale: 1, yscale: 1, angle: 0};
 
-defaultSound = -1;
-playSound = false;
+defaultTypeSound = undefined;
+playTypeSound = false;
 
 text = "";
 progress = 0;
@@ -14,9 +16,8 @@ set_text = function(str = "") {
 	newlineStr = defaultNewlineStr;
 	text = newlineStr + str;
 	
-	funcType = [];
-	funcDraw = [];
-	funcParams = [];
+	commandArray = [];
+	paramArray = [];
 	
 	for (var i=1; i<=string_length(text); i++) {
 		var char = string_char_at(text, i);
@@ -40,49 +41,50 @@ set_text = function(str = "") {
 			continue;
 		}
 		
+		//get command and parameters
 		var endPos = string_pos_ext("}", text, i + 1);
-		if (endPos = 0) break;
+		if (endPos = 0) break; //malformed command
 		var params = string_copy(text, i + 1, endPos - i - 1);
 		params = string_split(params, " ", true);
-		if (array_length(params) <= 0) continue;
-		var command = params[0];
+		if (array_length(params) <= 0) continue; //malformed command
+		var commandName = params[0];
+		var command = global.__text_data.command[$ commandName];
 		array_delete(params, 0, 1);
 		
-		var func = global.text_data.func[$ command];
-		var newStr = "";
-		
-		switch typeof(func) {
-		case "undefined":
+		if (!is_struct(command)) { //command does not exist
 			i = endPos;
 			continue;
-		case "array": //function
-			var index = array_length(funcParams);
-			var init = func[0]; //init
-			funcType[index] = func[1]; //type
-			funcDraw[index] = func[2]; //draw
-			funcRefresh[index] = func[3]; //refresh (word wrap)
-			funcParams[index] = params;
-			
-			if is_method(init) init(id, params);
-			newStr = "\a" + string_format(index, 2, 0);
-			break;
-		case "method": //func variable
-			newStr = func(id, params);
-			break;
-		default: //variable
-			newStr = func;
-			break;
+		}
+		
+		var init = command[$ "init"];
+		if is_method(init) init(id, params);
+		
+		var newStr = "";
+		
+		if (!command.removable) { //command has types that run post-init
+			var index = array_length(commandArray);
+			commandArray[index] = command;
+			paramArray[index] = params;
+			newStr += "\a" + string_format(index, 2, 0);
+		}
+		
+		var variable = command[$ "variable"];
+		if (variable != undefined) {
+			if is_method(variable) {
+				newStr += string(variable(id, params));
+			} else {
+				newStr += string(variable);
+			}
 		}
 		
 		text = string_delete(text, i, endPos - i + 1);
-		newStr = string(newStr);
 		text = string_insert(newStr, text, i);
 		i += string_length(newStr) - 1;
 	}
 	
 	typeTimer = 1;
-	typeSpeed = defaultSpeed;
-	typeSound = defaultSound;
+	typeSpeed = defaultTypeSpeed;
+	typeSound = defaultTypeSound;
 	progress = 0;
 	progressMax = string_length(text);
 	
@@ -98,19 +100,26 @@ set_newline_str = function(str = "") {
 	defaultNewlineStr = str;
 }
 
-set_style = function(style) {
-	defaultStyle = style;
+set_effect = function(effect_name) {
+	var command = global.__text_data.command[$ effect_name];
+	if (command = undefined) {
+		defaultTextTransform = undefined;
+		defaultTextRender = undefined;
+		return;
+	}
+	defaultTextTransform = command[$ "transform"];
+	defaultTextRender = command[$ "render"];
 }
 
 set_sound = function(sound) {
-	if (!is_real(sound)) sound = -1;
-	defaultSound = sound;
+	if (!is_handle(sound) && !is_array(sound)) sound = undefined;
+	defaultTypeSound = sound;
 	typeSound = sound;
 }
 
 set_speed = function(spd) {
-	defaultSpeed = game_get_speed(gamespeed_fps) / spd;
-	typeSpeed = defaultSpeed;
+	defaultTypeSpeed = game_get_speed(gamespeed_fps) / spd;
+	typeSpeed = defaultTypeSpeed;
 }
 
 skip = function() {
@@ -121,7 +130,7 @@ is_finished = function() {
 	return (progress >= progressMax);
 }
 
-draw = function(_x, _y, sep = -1, w = -1, scale = 1) {
+draw = function(_x, _y, sep = -1, w = -1, xscale = 1, yscale = 1, angle = 0) {
 	var font = draw_get_font();
 	w = (w >= 0) ? w : infinity;
 	
@@ -144,10 +153,13 @@ draw = function(_x, _y, sep = -1, w = -1, scale = 1) {
 	defaultValign = draw_get_valign();
 	draw_set_valign(fa_top);
 	
-	textStyle = defaultStyle;
+	textTransform = defaultTextTransform;
+	textRender = defaultTextRender;
 	var newlineX = string_width(newlineStr);
 	lineHeight = (sep >= 0) ? sep : string_height("M");
-	drawScale = scale;
+	drawXScale = xscale;
+	drawYScale = yscale;
+	drawAngle = angle;
 	drawX = _x;
 	drawY = _y;
 	xx = halign * lineWidth[0];
@@ -176,39 +188,64 @@ draw = function(_x, _y, sep = -1, w = -1, scale = 1) {
 		
 		if (char = "\a") {
 			var index = real(string_copy(text, i + 1, 2));
-			var func = funcDraw[index];
-			if (!is_undefined(func)) func(id, funcParams[index]);
+			var command = commandArray[index];
+			var func = command[$ "draw"];
+			if is_method(func) func(id, paramArray[index]);
+			textTransform = command[$ "transform"] ?? textTransform;
+			if (textTransform = "reset") textTransform = defaultTextTransform;
+			textRender = command[$ "render"] ?? textRender;
+			if (textRender = "reset") textRender = defaultTextRender;
 			i += 2;
 		} else {
 			#region transform text
-			var charX = xx;
-			var charY = yy;
-			var charSclX = 1;
-			var charSclY = 1;
-			var charAngle = 0;
+			var trans = textTransformStruct;
+			trans.char = char;
+			trans.x = xx;
+			trans.y = yy;
+			trans.xscale = 1;
+			trans.yscale = 1;
+			trans.angle = 0;
 			
-			switch textStyle {
-			case "shake":
-				charX += irandom_range(-1, 1);
-				charY += irandom_range(-1, 1);
-				break;
-			case "wave":
-				charY += sin(xx * 0.1 - current_time * 0.005) * 2;
-				break;
-			case "scared":
-				if (irandom(200) = 0) {
-					charY += irandom(1) * 2 - 1;
+			if (textTransform != undefined) {
+				if is_method(textTransform) {
+					textTransform(id, trans);
+				} else switch textTransform {
+				case "shake":
+					trans.x += irandom_range(-1, 1);
+					trans.y += irandom_range(-1, 1);
+					break;
+				case "wave":
+					trans.y += sin(trans.x * 0.1 - current_time * 0.005) * 2;
+					break;
+				case "scared":
+					if (irandom(200) = 0) {
+						trans.y += irandom(1) * 2 - 1;
+					}
+					break;
 				}
-				break;
 			}
 			
-			charX = drawX + charX * drawScale;
-			charY = drawY + charY * drawScale;
-			charSclX *= drawScale;
-			charSclY *= drawScale;
+			if (drawAngle != 0) {
+				var tempX = trans.x * drawXScale;
+				var tempY = trans.y * drawYScale;
+				var sinA = dsin(drawAngle);
+				var cosA = dcos(drawAngle);
+				trans.x = drawX + cosA * tempX + sinA * tempY;
+				trans.y = drawY + cosA * tempY - sinA * tempX;
+				trans.angle += drawAngle;
+			} else {
+				trans.x = drawX + trans.x * drawXScale;
+				trans.y = drawY + trans.y * drawYScale;
+			}
+			trans.xscale *= drawXScale;
+			trans.yscale *= drawYScale;
 			#endregion
 			
-			draw_text_transformed(charX, charY, char, charSclX, charSclY, charAngle);
+			if is_method(textRender) {
+				textRender(id, trans);
+			} else {
+				draw_text_transformed(trans.x, trans.y, trans.char, trans.xscale, trans.yscale, trans.angle);
+			}
 			xx += string_width(char);
 		}
 	}
@@ -221,7 +258,7 @@ draw = function(_x, _y, sep = -1, w = -1, scale = 1) {
 
 refresh = function(w) {
 	defaultFont = draw_get_font();
-	var drawWidth = w;
+	var maxWidth = w;
 	var newlineX = string_width(newlineStr);
 	var xx = 0;
 	var width = 0;
@@ -235,7 +272,7 @@ refresh = function(w) {
 		
 		if (char = " " || char = "\n") {
 			if (wordWidth > 0) {
-				if (xx + wordWidth > drawWidth) {
+				if (xx + wordWidth > maxWidth) {
 					lineWidth[lineIndex] = width;
 					newlinePos[lineIndex] = wrapPos;
 					lineIndex ++;
@@ -262,8 +299,9 @@ refresh = function(w) {
 			}
 		} else if (char = "\a") {
 			var index = real(string_copy(text, i + 1, 2));
-			var func = funcRefresh[index];
-			if (!is_undefined(func)) func(id, funcParams[index]);
+			var command = commandArray[index];
+			var func = command[$ "refresh"];
+			if is_method(func) func(id, paramArray[index]);
 			i += 2;
 		} else {
 			wordWidth += string_width(char);
@@ -273,3 +311,17 @@ refresh = function(w) {
 	lineCount = lineIndex;
 	draw_set_font(defaultFont);
 }
+
+#region in text commands API
+play_type_sound = function() {
+	playTypeSound = true;
+}
+
+wait = function(time = 1) {
+	typeTimer += typeSpeed * time;
+}
+
+wait_seconds = function(seconds) {
+	typeTimer += game_get_speed(gamespeed_fps) * seconds;
+}
+#endregion

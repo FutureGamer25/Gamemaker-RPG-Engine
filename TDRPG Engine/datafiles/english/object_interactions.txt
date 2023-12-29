@@ -24,6 +24,9 @@ you know that right?
 //#color white
 //thx {spr spr_player_walk_down}{wait 0.5} it means a lot
 
+[circle of friendship]
+{circle_of_friendship}wtf funni text rendering wtf why does it keep going in a circle when does it stop{/circle_of_friendship}
+
 [ice_cream_salesman]
 Hello, I’m the {c blue}ice cream{/c} salesman!
 I sell {c blue}ice cream{/c}!

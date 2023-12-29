@@ -45,6 +45,7 @@ text_set_color_struct(global.colorStruct);
 text_set_font_struct(global.fontStruct);
 text_set_sound_struct(global.soundStruct);
 text_set_silent_chars(" /n/t");
+text_add_char_delay(".,;:!?", 6);
 text_set_gain(0.5);
 
 dialog_character("jeff", sprite_2, sprite_0, snd_dialog_sans, {
@@ -57,5 +58,7 @@ dialog_character("jeff", sprite_2, sprite_0, snd_dialog_sans, {
 
 depth_sort_set_layer("depth");
 instance_create_depth(0, 0, 0, obj_game);
+
+
 
 room_goto_next();

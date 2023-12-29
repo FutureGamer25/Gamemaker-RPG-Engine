@@ -4,46 +4,37 @@ if (progress >= progressMax) exit;
 
 typeTimer --;
 
-playSound = false;
-
 while (progress < progressMax && typeTimer <= 0) {
 	progress ++;
 	var char = string_char_at(text, progress);
 	
-	if (audio_exists(typeSound)) {
-		if (char != "\a" && string_pos(char, global.text_data.silent) = 0) {
-			playSound = true;
-		}
+	if (char = "\a") {
+		var index = real(string_copy(text, progress + 1, 2));
+		var command = commandArray[index];
+		var func = command[$ "type"];
+		if is_method(func) func(id, paramArray[index]);
+		progress += 2;
+	} else {
+		var delay = global.__text_data.delay[$ char] ?? 1;
+		typeTimer += typeSpeed * delay;
 	}
 	
-	switch (char) {
-	case "\a":
-		var index = real(string_copy(text, progress + 1, 2));
-		var func = funcType[index];
-		if (!is_undefined(func)) func(id, funcParams[index]);
-		progress += 2;
-		break;
-	case ",":
-	case ";":
-	case ":":
-	case ".":
-	case "!":
-	case "?":
-		typeTimer += typeSpeed + game_get_speed(gamespeed_fps) / 5;
-		break;
-	default:
-		typeTimer += typeSpeed;
-		break;
+	if (typeSound != undefined) {
+		if (char != "\a" && string_pos(char, global.__text_data.silent) = 0) {
+			playTypeSound = true;
+		}
 	}
 }
 
-if (audio_exists(typeSound)) {
-	if playSound {
-		playSound = false;
+if playTypeSound {
+	playTypeSound = false;
+	if (typeSound != undefined) {
 		var snd = typeSound;
 		if is_array(typeSound) {
-			snd = typeSound[ irandom(array_length(typeSound - 1)) ];
+			//feather disable once all
+			snd = typeSound[ irandom(array_length(typeSound) - 1) ];
+			if (!is_handle(snd)) snd = -1;
 		}
-		audio_play_sound(snd, 0, false, global.text_data.gain);
+		if audio_exists(snd) audio_play_sound(snd, 0, false, global.__text_data.gain);
 	}
 }
