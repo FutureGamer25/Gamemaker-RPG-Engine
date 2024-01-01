@@ -18,5 +18,5 @@ if instance_exists(obj_player) {
 	follower_reset();
 }
 
-instance_unpause_all();
+set_pause(false);
 instance_destroy();

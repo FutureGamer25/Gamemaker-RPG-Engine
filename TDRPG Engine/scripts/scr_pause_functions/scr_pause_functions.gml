@@ -1,36 +1,73 @@
-function instance_pause(_id, pause = true) {
-	static func = function(ts, _id, pause) {
-		time_source_destroy(ts);
-		
-		if (_id = all) {
-			var assets = tag_get_asset_ids("pause", asset_object);
-			var len = array_length(assets);
-			for (var i=0; i<len; i++) {
-				with (assets[i]) {
-					set_pause(pause);
+function __get_pause_data_struct() {
+	static data = {
+		array: [], //array of active types
+		table: {} //look up struct of types (true if active)
+	}
+	return data;
+}
+
+/// @function get_pause(type_or_array)
+/// @param [type_or_array] {Any}
+function get_pause(type_or_array = "") {
+	static activeTable = __get_pause_data_struct().table;
+	static activeArray = __get_pause_data_struct().array;
+	
+	if (type_or_array = "") return (array_length(activeArray) > 0);
+	if is_array(type_or_array) {
+		for (var i=0; i<array_length(type_or_array); i++) {
+			if (activeTable[$ type_or_array[i]]) return true;
+		}
+	} else {
+		if (activeTable[$ type_or_array]) return true;
+	}
+	return false;
+}
+
+function get_pause_ignore(type_or_array) {
+	static activeTable = __get_pause_data_struct().table;
+	static activeArray = __get_pause_data_struct().array;
+	
+	var activeLen = array_length(activeArray);
+	if (activeLen = 0) return false;
+	
+	if is_array(type_or_array) {
+		var ignoreLen = array_length(type_or_array);
+		if (activeLen > ignoreLen) return true;
+		for (var i=0; i<activeLen; i++) {
+			var activeType = activeArray[i];
+			var canPause = true;
+			for (var j=0; j<ignoreLen; j++) {
+				if (activeType = type_or_array[j]) {
+					canPause = false;
+					break;
 				}
 			}
+			if canPause return true;
+		}
+		return false;
+	} else {
+		if (activeLen > 1) return true;
+		if (activeTable[$ type_or_array]) return false;
+		return true;
+	}
+}
+
+function set_pause(enable, type = "__general__") {
+	static func = function() {
+		static activeTable = __get_pause_data_struct().table;
+		static activeArray = __get_pause_data_struct().array;
+		
+		if (enable = (activeTable[$ type] = true)) return;
+		if enable {
+			activeTable[$ type] = true;
+			array_push(activeArray, type);
 		} else {
-			//feather disable once all
-			if (!instance_exists(_id)) return;
-			if (!asset_has_tags(_id.object_index, "pause", asset_object)) return;
-			_id.set_pause(pause);
+			struct_remove(activeTable, type);
+			array_delete(activeArray, array_get_index(activeArray, type), 1);
 		}
 	}
 	
-	var ts = time_source_create(time_source_game, 1, time_source_units_frames, func);
-	time_source_reconfigure(ts, 1, time_source_units_frames, func, [ts, _id, pause], 1, time_source_expire_after);
-	time_source_start(ts);
-}
-
-function instance_unpause(_id) {
-	instance_pause(_id, false);
-}
-
-function instance_pause_all(pause = true) {
-	instance_pause(all, pause);
-}
-
-function instance_unpause_all() {
-	instance_pause_all(false);
+	var struct = {enable, type};
+	var callback = method(struct, func);
+	call_later(1, time_source_units_frames, callback);
 }

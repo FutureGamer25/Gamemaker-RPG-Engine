@@ -1,4 +1,7 @@
-if (!pause) {
+if get_pause() {
+	running = false;
+	char_sprite_state_delay_frame(charSprite, "stand");
+} else {
 
 
 var horizontal = get_input("horizontal");

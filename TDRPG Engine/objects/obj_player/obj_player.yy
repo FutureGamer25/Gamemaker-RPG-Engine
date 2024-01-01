@@ -38,8 +38,5 @@
     "name": "spr_player_down",
     "path": "sprites/spr_player_down/spr_player_down.yy",
   },
-  "tags": [
-    "pause",
-  ],
   "visible": true,
 }

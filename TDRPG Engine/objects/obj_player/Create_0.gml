@@ -1,5 +1,3 @@
-pause = false;
-
 walkSpeed = 60 * global.dt;
 runSpeed = 120 * global.dt;
 running = false;
@@ -14,9 +12,3 @@ charSprite = char_sprite_create(global.charMapPlayer);
 
 follower_add();
 follower_add();
-
-set_pause = function(_pause) {
-	pause = _pause;
-	running = false;
-	char_sprite_state_delay_frame(charSprite, "stand");
-}

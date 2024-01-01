@@ -7,8 +7,8 @@ function dialog_start(lang_key, top_of_screen = undefined, pause = true) {
 	var inst = dialog_create(lang_get_array(lang_key), top_of_screen);
 	inst.check_inputs();
 	if pause {
-		instance_pause_all();
-		inst.set_end_method(function() { instance_unpause_all(); });
+		set_pause(true, "dialog");
+		inst.set_end_method(function() { set_pause(false, "dialog"); });
 	}
 	return inst;
 }

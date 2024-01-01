@@ -5,7 +5,7 @@ if (!changeRoom) {
 	playerDirX = char_sprite_get_x(obj_player.charSprite);
 	playerDirY = char_sprite_get_y(obj_player.charSprite);
 	
-	instance_pause_all();
+	set_pause(true);
 	changeRoom = true;
 	persistent = true;
 	room_fade(new_room, fade_color);
