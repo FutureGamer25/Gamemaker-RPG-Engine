@@ -3,6 +3,9 @@ defaultNewlineStr = "";
 defaultTextTransform = undefined;
 defaultTextRender = undefined;
 textTransformStruct = {char: "A", x: 0, y: 0, xscale: 1, yscale: 1, angle: 0};
+defaultFont = draw_get_font();
+textWrap = infinity;
+lineSep = -1;
 
 defaultTypeSound = undefined;
 playTypeSound = false;
@@ -92,8 +95,20 @@ set_text = function(str = "") {
 	lineWidth = [0];
 	lineCount = 0;
 	
-	prevWidth = undefined;
+	prevWrap = undefined;
 	prevFont = undefined;
+}
+
+set_font = function(font) {
+	defaultFont = font;
+}
+
+set_wrap = function(width = -1) {
+	textWrap = (width >= 0) ? width : infinity;
+}
+
+set_line_sep = function(sep = -1) {
+	lineSep = sep;
 }
 
 set_newline_str = function(str = "") {
@@ -130,38 +145,38 @@ is_finished = function() {
 	return (progress >= progressMax);
 }
 
-draw = function(_x, _y, sep = -1, w = -1, xscale = 1, yscale = 1, angle = 0) {
-	var font = draw_get_font();
-	w = (w >= 0) ? w : infinity;
-	
-	if (prevFont != font || prevWidth != w) {
-		prevFont = font;
-		prevWidth = w;
-		refresh(w); //update word wrap
+draw = function(_x, _y, xscale = 1, yscale = 1, angle = 0) {
+	if (prevFont != defaultFont || prevWrap != textWrap) {
+		prevFont = defaultFont;
+		prevWrap = textWrap;
+		refresh(textWrap); //update word wrap
 	}
 	
 	#region set values
-	defaultColor = draw_get_color();
-	defaultFont = font;
-	defaultHalign = draw_get_halign();
-	switch defaultHalign {
+	var oldColor = draw_get_color();
+	var oldFont = draw_get_font();
+	var oldHalign = draw_get_halign();
+	var oldValign = draw_get_valign();
+	
+	defaultColor = oldColor;
+	draw_set_font(defaultFont);
+	draw_set_halign(fa_left);
+	draw_set_valign(fa_top);
+	switch oldHalign {
 		default: halign = 0; break;
 		case fa_center: halign = -0.5; break;
 		case fa_right: halign = -1; break;
 	}
-	draw_set_halign(fa_left);
-	defaultValign = draw_get_valign();
-	draw_set_valign(fa_top);
 	
 	textTransform = defaultTextTransform;
 	textRender = defaultTextRender;
 	var newlineX = string_width(newlineStr);
-	lineHeight = (sep >= 0) ? sep : string_height("M");
+	lineHeight = (lineSep >= 0) ? lineSep : string_height("M");
+	drawX = _x;
+	drawY = _y;
 	drawXScale = xscale;
 	drawYScale = yscale;
 	drawAngle = angle;
-	drawX = _x;
-	drawY = _y;
 	xx = halign * lineWidth[0];
 	yy = 0;
 	var lineIndex = 0;
@@ -250,15 +265,16 @@ draw = function(_x, _y, sep = -1, w = -1, xscale = 1, yscale = 1, angle = 0) {
 		}
 	}
 	
-	draw_set_color(defaultColor);
-	draw_set_font(defaultFont);
-	draw_set_halign(defaultHalign);
-	draw_set_valign(defaultValign);
+	draw_set_color(oldColor);
+	draw_set_font(oldFont);
+	draw_set_halign(oldHalign);
+	draw_set_valign(oldValign);
 }
 
-refresh = function(w) {
-	defaultFont = draw_get_font();
-	var maxWidth = w;
+refresh = function(wrap) {
+	var oldFont = draw_get_font();
+	draw_set_font(defaultFont);
+	var maxWidth = wrap;
 	var newlineX = string_width(newlineStr);
 	var xx = 0;
 	var width = 0;
@@ -309,7 +325,7 @@ refresh = function(w) {
 	}
 	
 	lineCount = lineIndex;
-	draw_set_font(defaultFont);
+	draw_set_font(oldFont);
 }
 
 #region in text commands API

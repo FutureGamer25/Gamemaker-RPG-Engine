@@ -9,8 +9,8 @@ function text_destroy(text_obj) {
 	instance_destroy(text_obj);
 }
 
-function text_draw(text_obj, _x, _y, sep = -1, w = -1, xscale = 1, yscale = 1, angle = 0) {
-	text_obj.draw(_x, _y, sep, w, xscale, yscale, angle)
+function text_draw(text_obj, _x, _y, xscale = 1, yscale = 1, angle = 0) {
+	text_obj.draw(_x, _y, xscale, yscale, angle)
 }
 
 function text_set_text(text_obj, str) {
@@ -23,6 +23,18 @@ function text_skip(text_obj) {
 
 function text_is_finished(text_obj) {
 	return text_obj.is_finished();
+}
+
+function text_set_font(text_obj, font) {
+	text_obj.set_font(font);
+}
+
+function text_set_wrap(text_obj, width = -1) {
+	text_obj.set_wrap(width);
+}
+
+function text_set_line_sep(text_obj, sep = -1) {
+	text_obj.set_line_sep(sep);
 }
 
 function text_set_effect(text_obj, effect_name) {
