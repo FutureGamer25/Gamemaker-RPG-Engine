@@ -76,6 +76,7 @@
     {"id":{"name":"obj_follower_controller","path":"objects/obj_follower_controller/obj_follower_controller.yy",},},
     {"id":{"name":"obj_load_game_room_start","path":"objects/obj_load_game_room_start/obj_load_game_room_start.yy",},},
     {"id":{"name":"obj_dialog","path":"objects/obj_dialog/obj_dialog.yy",},},
+    {"id":{"name":"scr_sound_functions","path":"scripts/scr_sound_functions/scr_sound_functions.yy",},},
     {"id":{"name":"lang_file_load","path":"scripts/lang_file_load/lang_file_load.yy",},},
     {"id":{"name":"spr_player_walk_up","path":"sprites/spr_player_walk_up/spr_player_walk_up.yy",},},
     {"id":{"name":"obj_layer_sort_depth","path":"objects/obj_layer_sort_depth/obj_layer_sort_depth.yy",},},
