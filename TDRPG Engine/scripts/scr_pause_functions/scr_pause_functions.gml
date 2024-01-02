@@ -6,8 +6,7 @@ function __get_pause_data_struct() {
 	return data;
 }
 
-/// @function get_pause(type_or_array)
-/// @param [type_or_array] {Any}
+///@param {String|Array<string>} type_or_array
 function get_pause(type_or_array = "") {
 	static activeTable = __get_pause_data_struct().table;
 	static activeArray = __get_pause_data_struct().array;
@@ -23,6 +22,7 @@ function get_pause(type_or_array = "") {
 	return false;
 }
 
+///@param {String|Array<string>} type_or_array
 function get_pause_ignore(type_or_array) {
 	static activeTable = __get_pause_data_struct().table;
 	static activeArray = __get_pause_data_struct().array;
@@ -52,6 +52,8 @@ function get_pause_ignore(type_or_array) {
 	}
 }
 
+///@param {Bool} enable
+///@param {String} type
 function set_pause(enable, type = "__general__") {
 	static func = function() {
 		static activeTable = __get_pause_data_struct().table;
