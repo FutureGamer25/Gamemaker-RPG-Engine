@@ -17,9 +17,9 @@ if (sprite_index > 0) {
 	borderLeft = 50;
 }
 
-draw_set_color(color);
 text_set_font(textObj, font);
-text_set_wrap(textObj, width - borderLeft - borderRight)
+text_set_wrap(textObj, width - borderLeft - borderRight);
+draw_set_color(color);
 text_draw(textObj, x + borderLeft, y + borderTop);
 
 if (state = "choice") {

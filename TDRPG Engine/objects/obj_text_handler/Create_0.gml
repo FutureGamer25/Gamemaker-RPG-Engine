@@ -1,19 +1,33 @@
-defaultTypeSpeed = game_get_speed(gamespeed_fps) / 30;
-defaultNewlineStr = "";
-defaultTextTransform = undefined;
-defaultTextRender = undefined;
-textTransformStruct = {char: "A", x: 0, y: 0, xscale: 1, yscale: 1, angle: 0};
-defaultFont = draw_get_font();
-textWrap = infinity;
-lineSep = -1;
-
-defaultTypeSound = undefined;
-playTypeSound = false;
-
 text = "";
 progress = 0;
 
+//typing
+defaultTypeSpeed = game_get_speed(gamespeed_fps) / 30;
+defaultTypeSound = undefined;
+playTypeSound = false;
 frame = 0;
+
+//text effects
+defaultTextTransform = undefined;
+defaultTextRender = undefined;
+textTransformStruct = {char: "", x: 0, y: 0, xscale: 1, yscale: 1, angle: 0};
+defaultTransformParams = undefined;
+defaultRenderParams = undefined;
+
+defaultNewlineStr = "";
+defaultFont = draw_get_font();
+
+//refresh data
+prevFont = undefined;
+prevWrap = undefined;
+textWrap = infinity;
+lineSep = -1;
+lineWidth = [0];
+lineHeight = [0];
+newlinePos = [infinity];
+lineCount = 0;
+textWidth = 0;
+textHeight = 0;
 
 set_text = function(str = "") {
 	newlineStr = defaultNewlineStr;
@@ -90,10 +104,7 @@ set_text = function(str = "") {
 	typeSound = defaultTypeSound;
 	progress = 0;
 	progressMax = string_length(text);
-	
-	newlinePos = [infinity];
-	lineWidth = [0];
-	lineCount = 0;
+	frame = 0;
 	
 	prevWrap = undefined;
 	prevFont = undefined;
@@ -115,15 +126,19 @@ set_newline_str = function(str = "") {
 	defaultNewlineStr = str;
 }
 
-set_effect = function(effect_name) {
+set_effect = function(effect_name, parameters = []) {
 	var command = global.__text_data.command[$ effect_name];
 	if (command = undefined) {
 		defaultTextTransform = undefined;
 		defaultTextRender = undefined;
+		defaultTransformParams = undefined;
+		defaultRenderParams = undefined;
 		return;
 	}
 	defaultTextTransform = command[$ "transform"];
 	defaultTextRender = command[$ "render"];
+	defaultTransformParams = parameters;
+	defaultRenderParams = parameters;
 }
 
 set_sound = function(sound) {
@@ -145,12 +160,24 @@ is_finished = function() {
 	return (progress >= progressMax);
 }
 
+get_width = function() {
+	refresh(); //update word wrap
+	return textWidth;
+}
+
+get_height = function() {
+	refresh(); //update word wrap
+	if (lineSep < 0) return textHeight;
+	var maxLine = lineCount - 1;
+	return lineSep * maxLine + 0.5 * (lineHeight[0] + lineHeight[maxLine]);
+}
+
+get_line_count = function() {
+	return lineCount;
+}
+
 draw = function(_x, _y, xscale = 1, yscale = 1, angle = 0) {
-	if (prevFont != defaultFont || prevWrap != textWrap) {
-		prevFont = defaultFont;
-		prevWrap = textWrap;
-		refresh(textWrap); //update word wrap
-	}
+	refresh(); //update word wrap
 	
 	#region set values
 	var oldColor = draw_get_color();
@@ -161,24 +188,36 @@ draw = function(_x, _y, xscale = 1, yscale = 1, angle = 0) {
 	defaultColor = oldColor;
 	draw_set_font(defaultFont);
 	draw_set_halign(fa_left);
-	draw_set_valign(fa_top);
+	draw_set_valign(fa_middle);
 	switch oldHalign {
 		default: halign = 0; break;
 		case fa_center: halign = -0.5; break;
 		case fa_right: halign = -1; break;
 	}
+	switch oldValign {
+		default: valign = 0; break;
+		case fa_middle: valign = -0.5; break;
+		case fa_bottom: valign = -1; break;
+	}
 	
 	textTransform = defaultTextTransform;
 	textRender = defaultTextRender;
-	var newlineX = string_width(newlineStr);
-	lineHeight = (lineSep >= 0) ? lineSep : string_height("M");
+	textTransformParams = defaultTransformParams;
+	textRenderParams = defaultRenderParams;
 	drawX = _x;
 	drawY = _y;
 	drawXScale = xscale;
 	drawYScale = yscale;
 	drawAngle = angle;
 	xx = halign * lineWidth[0];
-	yy = 0;
+	yy = valign * get_height();
+	textXScale = 1;
+	textYScale = 1;
+	textAngle = 0;
+	textLineHeight = (lineSep >= 0)? lineSep: lineHeight[0];
+	textYOffset = lineHeight[0] * 0.5;
+	
+	var newlineX = string_width(newlineStr);
 	var lineIndex = 0;
 	var wrapPos = newlinePos[0];
 	#endregion
@@ -190,7 +229,11 @@ draw = function(_x, _y, xscale = 1, yscale = 1, angle = 0) {
 			lineIndex ++;
 			wrapPos = newlinePos[lineIndex];
 			xx = halign * lineWidth[lineIndex];
-			yy += lineHeight;
+			yy += textLineHeight;
+			if (lineSep < 0) {
+				textLineHeight = lineHeight[lineIndex];
+				textYOffset = textLineHeight * 0.5;
+			}
 			
 			if (i > 1) {
 				if (string_char_at(text, i - 1) = "\n") {
@@ -202,66 +245,46 @@ draw = function(_x, _y, xscale = 1, yscale = 1, angle = 0) {
 		}
 		
 		if (char = "\a") {
+			#region commands
 			var index = real(string_copy(text, i + 1, 2));
 			var command = commandArray[index];
+			var params = paramArray[index];
+			
 			var func = command[$ "draw"];
-			if is_method(func) func(id, paramArray[index]);
-			textTransform = command[$ "transform"] ?? textTransform;
-			if (textTransform = "reset") textTransform = defaultTextTransform;
-			textRender = command[$ "render"] ?? textRender;
-			if (textRender = "reset") textRender = defaultTextRender;
+			if is_method(func) func(id, params);
+			
+			var effect = command[$ "transform"];
+			if (effect = "reset") {
+				textTransform = defaultTextTransform;
+				textTransformParams = defaultTransformParams;
+			} else if (effect != undefined) {
+				textTransform = effect;
+				textTransformParams = params;
+			}
+			
+			var effect = command[$ "render"];
+			if (effect = "reset") {
+				textRender = defaultTextRender;
+				textRenderParams = defaultRenderParams;
+			} else if (effect != undefined) {
+				textRender = effect;
+				textRenderParams = params;
+			}
+			
 			i += 2;
-		} else {
-			#region transform text
-			var trans = textTransformStruct;
-			trans.char = char;
-			trans.x = xx;
-			trans.y = yy;
-			trans.xscale = 1;
-			trans.yscale = 1;
-			trans.angle = 0;
-			
-			if (textTransform != undefined) {
-				if is_method(textTransform) {
-					textTransform(id, trans);
-				} else switch textTransform {
-				case "shake":
-					trans.x += irandom_range(-1, 1);
-					trans.y += irandom_range(-1, 1);
-					break;
-				case "wave":
-					trans.y += sin(trans.x * 0.1 - current_time * 0.005) * 2;
-					break;
-				case "scared":
-					if (irandom(200) = 0) {
-						trans.y += irandom(1) * 2 - 1;
-					}
-					break;
-				}
-			}
-			
-			if (drawAngle != 0) {
-				var tempX = trans.x * drawXScale;
-				var tempY = trans.y * drawYScale;
-				var sinA = dsin(drawAngle);
-				var cosA = dcos(drawAngle);
-				trans.x = drawX + cosA * tempX + sinA * tempY;
-				trans.y = drawY + cosA * tempY - sinA * tempX;
-				trans.angle += drawAngle;
-			} else {
-				trans.x = drawX + trans.x * drawXScale;
-				trans.y = drawY + trans.y * drawYScale;
-			}
-			trans.xscale *= drawXScale;
-			trans.yscale *= drawYScale;
 			#endregion
+		} else {
+			var trans = update_transform_struct(char, 0, textYOffset);
 			
+			#region render text
 			if is_method(textRender) {
-				textRender(id, trans);
+				textRender(id, trans, textRenderParams);
 			} else {
 				draw_text_transformed(trans.x, trans.y, trans.char, trans.xscale, trans.yscale, trans.angle);
 			}
-			xx += string_width(char);
+			#endregion
+			
+			xx += string_width(char) * textXScale;
 		}
 	}
 	
@@ -271,47 +294,76 @@ draw = function(_x, _y, xscale = 1, yscale = 1, angle = 0) {
 	draw_set_valign(oldValign);
 }
 
-refresh = function(wrap) {
+#region internal
+refresh = function() {
+	if (prevFont = defaultFont && prevWrap = textWrap) return;
+	prevFont = defaultFont;
+	prevWrap = textWrap;
+	
 	var oldFont = draw_get_font();
 	draw_set_font(defaultFont);
-	var maxWidth = wrap;
 	var newlineX = string_width(newlineStr);
 	var xx = 0;
+	textXScale = 1;
+	textYScale = 1;
+	textAngle = 0;
 	var width = 0;
+	var height = 0;
 	wordWidth = 0;
+	wordHeight = 0;
 	var wrapPos = 0;
-	var lineIndex = 0;
 	var str = text + "\n";
+	lineCount = 0;
+	textWidth = 0;
+	textHeight = 0;
 	
 	for (var i=1; i<=progressMax+1; i++) {
 		var char = string_char_at(str, i);
 		
 		if (char = " " || char = "\n") {
 			if (wordWidth > 0) {
-				if (xx + wordWidth > maxWidth) {
-					lineWidth[lineIndex] = width;
-					newlinePos[lineIndex] = wrapPos;
-					lineIndex ++;
+				if (xx + wordWidth > textWrap) { //wrap
+					lineWidth[lineCount] = width;
+					lineHeight[lineCount] = height;
+					newlinePos[lineCount] = wrapPos;
+					lineCount ++;
+					
+					textWidth = max(textWidth, width);
+					textHeight += height;
+					
+					//reset line
 					xx = newlineX;
+					width = 0;
+					height = 0;
 				}
 				
+				//add word to line
 				xx += wordWidth;
 				width = xx;
+				height = max(height, wordHeight);
 				wordWidth = 0;
+				wordHeight = 0;
 			}
 			
 			wrapPos = i + 1;
+			height = max(height, string_height(char) * textYScale);
 			
-			if (char = "\n") {
-				lineWidth[lineIndex] = width;
-				newlinePos[lineIndex] = wrapPos;
-				lineIndex ++;
+			if (char = "\n") { //newline
+				lineWidth[lineCount] = width;
+				lineHeight[lineCount] = height;
+				newlinePos[lineCount] = wrapPos;
+				lineCount ++;
+				
+				textWidth = max(textWidth, width);
+				textHeight += height;
+				
 				newlineX = string_width(newlineStr);
+				//reset line
 				xx = 0;
 				width = 0;
-				wordWidth = 0;
+				height = 0;
 			} else {
-				xx += string_width(char);
+				xx += string_width(char) * textXScale;
 			}
 		} else if (char = "\a") {
 			var index = real(string_copy(text, i + 1, 2));
@@ -320,15 +372,103 @@ refresh = function(wrap) {
 			if is_method(func) func(id, paramArray[index]);
 			i += 2;
 		} else {
-			wordWidth += string_width(char);
+			wordWidth += string_width(char) * textXScale;
+			wordHeight = max(wordHeight, string_height(char) * textYScale);
 		}
 	}
 	
-	lineCount = lineIndex;
 	draw_set_font(oldFont);
 }
 
+update_transform_struct = function(char, xoffset, yoffset) {
+	var trans = textTransformStruct;
+	trans.char = char;
+	trans.x = xx + xoffset;
+	trans.y = yy + yoffset;
+	trans.xscale = textXScale;
+	trans.yscale = textYScale;
+	trans.angle = textAngle;
+	
+	if (textTransform != undefined) {
+		if is_method(textTransform) {
+			textTransform(id, trans, textTransformParams);
+		} else switch textTransform {
+		case "shake":
+			trans.x += irandom_range(-1, 1);
+			trans.y += irandom_range(-1, 1);
+			break;
+		case "wave":
+			trans.y += sin(trans.x * 0.1 - current_time * 0.005) * 2;
+			break;
+		case "scared":
+			if (irandom(200) = 0) {
+				trans.y += irandom(1) * 2 - 1;
+			}
+			break;
+		}
+	}
+	
+	if (drawAngle != 0) {
+		var tempX = trans.x * drawXScale;
+		var tempY = trans.y * drawYScale;
+		var sinA = dsin(drawAngle);
+		var cosA = dcos(drawAngle);
+		trans.x = drawX + cosA * tempX + sinA * tempY;
+		trans.y = drawY + cosA * tempY - sinA * tempX;
+		trans.angle += drawAngle;
+	} else {
+		trans.x = drawX + trans.x * drawXScale;
+		trans.y = drawY + trans.y * drawYScale;
+	}
+	trans.xscale *= drawXScale;
+	trans.yscale *= drawYScale;
+	return trans;
+}
+#endregion
+
 #region in text commands API
+#region misc
+get_type_frame = function() {
+	return frame;
+}
+#endregion
+
+#region refresh
+refresh_add_width = function(width) {
+	wordWidth += width;
+}
+
+refresh_add_height = function(height) {
+	wordHeight = max(wordHeight, height);
+}
+
+refresh_set_xscale = function(xscale) {
+	textXScale = xscale;
+}
+
+refresh_set_yscale = function(yscale) {
+	textYScale = yscale;
+}
+#endregion
+
+#region draw
+draw_add_width = function(width) {
+	xx += width;
+}
+
+draw_add_height = function(height) {
+	//nothing for now
+}
+
+draw_set_xscale = refresh_set_xscale;
+draw_set_yscale = refresh_set_yscale;
+
+draw_get_transform = function(xoffset = 0, yoffset = 0) {
+	return update_transform_struct("", xoffset, yoffset + textYOffset);
+}
+#endregion
+
+#region type
 play_type_sound = function() {
 	playTypeSound = true;
 }
@@ -340,4 +480,5 @@ wait = function(time = 1) {
 wait_seconds = function(seconds) {
 	typeTimer += game_get_speed(gamespeed_fps) * seconds;
 }
+#endregion
 #endregion

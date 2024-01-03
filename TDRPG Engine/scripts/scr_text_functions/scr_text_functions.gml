@@ -37,8 +37,8 @@ function text_set_line_sep(text_obj, sep = -1) {
 	text_obj.set_line_sep(sep);
 }
 
-function text_set_effect(text_obj, effect_name) {
-	text_obj.set_effect(effect_name);
+function text_set_effect(text_obj, effect_name, parameters = []) {
+	text_obj.set_effect(effect_name, parameters);
 }
 
 function text_set_speed(text_obj, spd) {
@@ -51,6 +51,18 @@ function text_set_sound(text_obj, sound) {
 
 function text_set_newline_str(text_obj, str) {
 	text_obj.set_newline_str(str);
+}
+
+function text_get_width(text_obj) {
+	return text_obj.get_width();
+}
+
+function text_get_height(text_obj) {
+	return text_obj.get_height();
+}
+
+function text_get_line_count(text_obj) {
+	return text_obj.get_line_count();
 }
 #endregion
 
