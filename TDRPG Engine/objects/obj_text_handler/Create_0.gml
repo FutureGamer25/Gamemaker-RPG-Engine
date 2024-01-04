@@ -262,7 +262,7 @@ draw = function(_x, _y, xscale = 1, yscale = 1, angle = 0) {
 				textTransformParams = params;
 			}
 			
-			var effect = command[$ "render"];
+			effect = command[$ "render"];
 			if (effect = "reset") {
 				textRender = defaultTextRender;
 				textRenderParams = defaultRenderParams;
@@ -346,9 +346,10 @@ refresh = function() {
 			}
 			
 			wrapPos = i + 1;
-			height = max(height, string_height(char) * textYScale);
 			
 			if (char = "\n") { //newline
+				if (height = 0) height = string_height(char) * textYScale;
+				
 				lineWidth[lineCount] = width;
 				lineHeight[lineCount] = height;
 				newlinePos[lineCount] = wrapPos;
@@ -364,6 +365,7 @@ refresh = function() {
 				height = 0;
 			} else {
 				xx += string_width(char) * textXScale;
+				//height = max(height, string_height(char) * textYScale);
 			}
 		} else if (char = "\a") {
 			var index = real(string_copy(text, i + 1, 2));
