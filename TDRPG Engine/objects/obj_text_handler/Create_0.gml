@@ -209,6 +209,8 @@ draw = function(_x, _y, xscale = 1, yscale = 1, angle = 0) {
 	drawXScale = xscale;
 	drawYScale = yscale;
 	drawAngle = angle;
+	drawSin = dsin(drawAngle);
+	drawCos = dcos(drawAngle);
 	xx = halign * lineWidth[0];
 	yy = valign * get_height();
 	textXScale = 1;
@@ -257,7 +259,7 @@ draw = function(_x, _y, xscale = 1, yscale = 1, angle = 0) {
 			if (effect = "reset") {
 				textTransform = defaultTextTransform;
 				textTransformParams = defaultTransformParams;
-			} else if (effect != undefined) {
+			} else if is_method(effect) {
 				textTransform = effect;
 				textTransformParams = params;
 			}
@@ -266,7 +268,7 @@ draw = function(_x, _y, xscale = 1, yscale = 1, angle = 0) {
 			if (effect = "reset") {
 				textRender = defaultTextRender;
 				textRenderParams = defaultRenderParams;
-			} else if (effect != undefined) {
+			} else if is_method(effect) {
 				textRender = effect;
 				textRenderParams = params;
 			}
@@ -391,32 +393,15 @@ update_transform_struct = function(char, xoffset, yoffset) {
 	trans.yscale = textYScale;
 	trans.angle = textAngle;
 	
-	if (textTransform != undefined) {
-		if is_method(textTransform) {
-			textTransform(id, trans, textTransformParams);
-		} else switch textTransform {
-		case "shake":
-			trans.x += irandom_range(-1, 1);
-			trans.y += irandom_range(-1, 1);
-			break;
-		case "wave":
-			trans.y += sin(trans.x * 0.1 - current_time * 0.005) * 2;
-			break;
-		case "scared":
-			if (irandom(200) = 0) {
-				trans.y += irandom(1) * 2 - 1;
-			}
-			break;
-		}
+	if is_method(textTransform) {
+		textTransform(id, trans, textTransformParams);
 	}
 	
 	if (drawAngle != 0) {
 		var tempX = trans.x * drawXScale;
 		var tempY = trans.y * drawYScale;
-		var sinA = dsin(drawAngle);
-		var cosA = dcos(drawAngle);
-		trans.x = drawX + cosA * tempX + sinA * tempY;
-		trans.y = drawY + cosA * tempY - sinA * tempX;
+		trans.x = drawX + drawCos * tempX + drawSin * tempY;
+		trans.y = drawY + drawCos * tempY - drawSin * tempX;
 		trans.angle += drawAngle;
 	} else {
 		trans.x = drawX + trans.x * drawXScale;

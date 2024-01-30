@@ -25,8 +25,8 @@ function __text_refresh_func(name_or_array, func) {
 	__text_add_command_type(name_or_array, "refresh", func);
 }
 
-function __text_transform_effect(name_or_array, func_or_name) {
-	__text_add_command_type(name_or_array, "transform", func_or_name);
+function __text_transform_effect(name_or_array, func) {
+	__text_add_command_type(name_or_array, "transform", func);
 }
 
 function __text_render_effect(name_or_array, func) {
@@ -153,11 +153,18 @@ __text_type_func(["/speed", "/spd"], function(inst) {
 #endregion
 
 #region transform effects
-__text_transform_effect("shake", "shake");
+__text_transform_effect("shake", function(inst, trans) {
+	trans.x += irandom_range(-1, 1);
+	trans.y += irandom_range(-1, 1);
+});
 
-__text_transform_effect("wave", "wave");
+__text_transform_effect("wave", function(inst, trans) {
+	trans.y += sin(trans.x * 0.1 - current_time * 0.005) * 2;
+});
 
-__text_transform_effect("scared", "scared");
+__text_transform_effect("scared", function(inst, trans) {
+	if (irandom(200) = 0) trans.y += irandom(1) * 2 - 1;
+});
 
 __text_transform_effect(["/shake", "/wave", "/scared"], "reset");
 #endregion
