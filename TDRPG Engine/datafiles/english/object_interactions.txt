@@ -2,6 +2,9 @@
 [potted_plant_2] Okey I lied it's actually a book...
 
 [hallway_bookshelf]
+thx {spr spr_player_walk_down} it {size 2}means{/size} a lot\n{wait 0.5}also a new line with some {c red}word wrap{/c} probably
+I'm going to {size 3}{c red}{shake}KILL{/shake}{/c}{/size} you!
+
 #char jeff
 hi there my {wave}lovely{/wave} wife
 #face happy

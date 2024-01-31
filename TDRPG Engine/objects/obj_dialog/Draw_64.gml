@@ -17,9 +17,10 @@ if (sprite_index > 0) {
 	borderLeft = 50;
 }
 
+text_set_font(textObj, font);
+text_set_wrap(textObj, width - borderLeft - borderRight);
 draw_set_color(color);
-draw_set_font(font);
-text_draw(textObj, x + borderLeft, y + borderTop, -1, width - borderLeft - borderRight);
+text_draw(textObj, x + borderLeft, y + borderTop);
 
 if (state = "choice") {
 	for (var i=0; i<array_length(optionKey); i++) {
