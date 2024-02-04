@@ -8,10 +8,20 @@ function __sound_get_data_struct() {
 	return data;
 }
 
-function __sound_get_category_data(category) {
+function __sound_get_category_data(category, read_only = false) {
 	static catTable = __sound_get_data_struct().category;
+	static nullData = {
+		emitter: -1,
+		bus: -1,
+		priority: 0,
+		gain: 1,
+		group: "",
+		groupGain: 1,
+	};
+	
 	var data = catTable[$ category];
 	if (data = undefined) {
+		if (read_only) return nullData;
 		data = {
 			emitter: audio_emitter_create(),
 			bus: audio_bus_create(),
@@ -19,7 +29,7 @@ function __sound_get_category_data(category) {
 			gain: 1,
 			group: "",
 			groupGain: 1,
-		}
+		};
 		audio_emitter_bus(data.emitter, data.bus);
 		catTable[$ category] = data;
 	}
@@ -37,6 +47,10 @@ function __sound_get_category_group_data(group) {
 		groupTable[$ group] = data;
 	}
 	return data;
+}
+
+function __sound_update_category_gain(cat_struct) {
+	cat_struct.bus.gain = cat_struct.gain * cat_struct.groupGain;
 }
 #endregion
 
@@ -66,7 +80,7 @@ function sound_category_group_gain(group, gain) {
 	for (var i=0; i<array_length(array); i++) {
 		var catStruct = __sound_get_category_data(array[i]);
 		catStruct.groupGain = gain;
-		catStruct.bus.gain = catStruct.gain * gain;
+		__sound_update_category_gain(catStruct);
 	}
 }
 
@@ -77,11 +91,13 @@ function sound_category_group_get_gain(group) {
 
 #region categories
 function sound_category_set_default(category) {
-	__sound_get_data_struct().defaultCategory = category;
+	static struct = __sound_get_data_struct();
+	struct.defaultCategory = category;
 }
 
 function sound_category_get_default() {
-	return __sound_get_data_struct().defaultCategory;
+	static struct = __sound_get_data_struct();
+	return struct.defaultCategory;
 }
 
 function sound_category_priority(category, priority) {
@@ -89,17 +105,17 @@ function sound_category_priority(category, priority) {
 }
 
 function sound_category_get_priority(category) {
-	return __sound_get_category_data(category).priority;
+	return __sound_get_category_data(category, true).priority;
 }
 
 function sound_category_gain(category, gain) {
 	var catStruct = __sound_get_category_data(category);
 	catStruct.gain = gain;
-	catStruct.bus.gain = gain * catStruct.groupGain;
+	__sound_update_category_gain(catStruct);
 }
 
 function sound_category_get_gain(category) {
-	return __sound_get_category_data(category).gain;
+	return __sound_get_category_data(category, true).gain;
 }
 
 function sound_category_pitch(category, pitch) {
@@ -107,7 +123,9 @@ function sound_category_pitch(category, pitch) {
 }
 
 function sound_category_get_pitch(category) {
-	return audio_emitter_get_pitch(__sound_get_category_data(category).emitter);
+	var emitter = __sound_get_category_data(category, true).emitter;
+	if (emitter = -1) return 1;
+	return audio_emitter_get_pitch(emitter);
 }
 
 function sound_category_set_listener_mask(category, mask) {
@@ -115,44 +133,105 @@ function sound_category_set_listener_mask(category, mask) {
 }
 
 function sound_category_get_listener_mask(category) {
-	return audio_emitter_get_listener_mask(__sound_get_category_data(category).emitter);
+	var emitter = __sound_get_category_data(category, true).emitter;
+	if (emitter = -1) return audio_get_listener_mask();
+	return audio_emitter_get_listener_mask(emitter);
+}
+
+function sound_category_push_effect(category, effect) {
+	var bus = __sound_get_category_data(category).bus;
+	var pos = -1;
+	for (var i=array_length(bus.effects)-1; i>=0; i--) {
+		if (bus.effects[i] = undefined) {
+			pos = i;
+		} else if (pos != -1) {
+			break;
+		}
+	}
+	if (pos = -1) {
+		show_message("Too many effects on sound category \"" + category + "\"");
+		return;
+	}
+	bus.effects[pos] = effect;
+}
+
+function sound_category_pop_effect(category) {
+	var bus = __sound_get_category_data(category).bus;
+	for (var i=array_length(bus.effects)-1; i>=0; i--) {
+		var slot = bus.effects[i];
+		if (slot != undefined) {
+			bus.effects[i] = undefined;
+			return slot;
+		}
+	}
+	return undefined;
+}
+
+function sound_category_clear_effects(category) {
+	var bus = __sound_get_category_data(category).bus;
+	for (var i=array_length(bus.effects)-1; i>=0; i--) {
+		bus.effects[i] = undefined;
+	}
+}
+
+function sound_category_get_bus(category) {
+	return __sound_get_category_data(category).bus;
 }
 #endregion
 
 #region sounds
-function sound_play(soundid, loops, category = sound_category_get_default(), gain = 1, offset = 0, pitch = 1) {
+function sound_play(sound, loops, category = undefined, gain = 1, offset = 0, pitch = 1) {
+	if (!is_string(category)) category = sound_category_get_default();
 	var catStruct = __sound_get_category_data(category);
-	audio_play_sound_on(catStruct.emitter, soundid, loops, catStruct.priority, gain, offset, pitch);
+	return audio_play_sound_on(catStruct.emitter, sound, loops, catStruct.priority, gain, offset, pitch);
 }
 
-function sound_play_fade(soundid, loops, fade_time, category = sound_category_get_default(), gain = 1, offset = 0, pitch = 1) {
-	var catStruct = __sound_get_category_data(category);
-	var audio = audio_play_sound_on(catStruct.emitter, soundid, loops, catStruct.priority, gain, offset, pitch);
-	return {
-		audio: audio,
+function sound_play_fade(sound, loops, seconds, category = undefined, gain = 1, offset = 0, pitch = 1) {
+	var index = sound_play(sound, loops, category, 0, offset, pitch);
+	sound_gain(index, gain, seconds);
+	return index;
+}
+
+function sound_stop(index) {
+	audio_stop_sound(index);
+}
+
+function sound_stop_fade(index, seconds) {
+	static callback = function(index) {
+		audio_stop_sound(index);
 	}
-	
+	sound_gain(index, 0, seconds, callback, [index]);
 }
 
-function sound_get_audio(sound) {
-	return sound.audio;
+function sound_pause(index) {
+	audio_pause_sound(index);
 }
 
-function sound_gain_fade(sound, gain, seconds, end_method = undefined) {
-	audio_sound_gain(sound.audio, gain, seconds * 1000);
-}
-#endregion
-
-#region music
-function music_play(soundid) {
-	
+function sound_pause_fade(index, seconds) {
+	static callback = function(index, gain) {
+		audio_pause_sound(index);
+		audio_sound_gain(index, gain, 0);
+	}
+	sound_gain(index, 0, seconds, callback, [index, audio_sound_get_gain(index)]);
 }
 
-function music_stop() {
-	
+function sound_resume(index) {
+	audio_resume_sound(index);
 }
 
-function music_variate() {
-	
+function sound_resume_fade(index, seconds) {
+	var gain = audio_sound_get_gain(index);
+	audio_sound_gain(index, 0, 0);
+	audio_resume_sound(index);
+	audio_sound_gain(index, gain, seconds * 1000);
+}
+
+function sound_gain(index, volume, seconds = 0, callback = undefined, args = undefined) {
+	audio_sound_gain(index, volume, seconds * 1000);
+	if is_method(callback) {
+		if (!is_array(args)) args = [];
+		var source = time_source_create(time_source_global, seconds, time_source_units_seconds, callback, args, 1, time_source_expire_after);
+		time_source_start(source);
+	}
 }
 #endregion

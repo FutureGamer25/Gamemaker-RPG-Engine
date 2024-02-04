@@ -83,6 +83,7 @@
     {"id":{"name":"spr_wall","path":"sprites/spr_wall/spr_wall.yy",},},
     {"id":{"name":"scr_party","path":"scripts/scr_party/scr_party.yy",},},
     {"id":{"name":"obj_text_handler","path":"objects/obj_text_handler/obj_text_handler.yy",},},
+    {"id":{"name":"snd_test_music","path":"sounds/snd_test_music/snd_test_music.yy",},},
     {"id":{"name":"obj_follower","path":"objects/obj_follower/obj_follower.yy",},},
     {"id":{"name":"scr_save_system","path":"scripts/scr_save_system/scr_save_system.yy",},},
     {"id":{"name":"sprite_1","path":"sprites/sprite_1/sprite_1.yy",},},
