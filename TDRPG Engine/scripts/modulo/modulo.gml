@@ -1,3 +1,3 @@
 function modulo(x, n) {
-  return x - floor(x / n) * n;
+  return ((x % n) + n) % n;
 }

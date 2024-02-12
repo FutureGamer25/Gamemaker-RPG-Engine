@@ -1,7 +1,7 @@
 {
   "resourceType": "GMScript",
   "resourceVersion": "1.0",
-  "name": "scr_char_map_functions",
+  "name": "scr_char_sprite_functions",
   "isCompatibility": false,
   "isDnD": false,
   "parent": {

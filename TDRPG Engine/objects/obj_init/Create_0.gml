@@ -15,11 +15,12 @@ lang_set_directory("english");
 lang_file_load("object_interactions.txt");
 
 #region overworld sprite maps
-var map = char_map_create();
+var map = char_sprite_map_create();
+char_sprite_map_default(map, "stand");
+char_sprite_map_4dir(map, "stand", spr_player_up, spr_player_down, spr_player_left, spr_player_right);
+char_sprite_map_4dir(map, "walk", spr_player_walk_up, spr_player_walk_down, spr_player_walk_left, spr_player_walk_right);
+char_sprite_map_delay(map, "walk", 2);
 global.charMapPlayer = map;
-char_map_default(map, "stand");
-char_map_4dir(map, "stand", spr_player_up, spr_player_down, spr_player_left, spr_player_right);
-char_map_4dir(map, "walk", spr_player_walk_up, spr_player_walk_down, spr_player_walk_left, spr_player_walk_right);
 #endregion
 
 #region dialog and text stuff

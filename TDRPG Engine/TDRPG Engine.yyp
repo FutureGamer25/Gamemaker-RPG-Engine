@@ -66,7 +66,7 @@
     {"id":{"name":"spr_obj_camera_setup","path":"sprites/spr_obj_camera_setup/spr_obj_camera_setup.yy",},},
     {"id":{"name":"scr_init_fonts","path":"scripts/scr_init_fonts/scr_init_fonts.yy",},},
     {"id":{"name":"scr_gui_functions","path":"scripts/scr_gui_functions/scr_gui_functions.yy",},},
-    {"id":{"name":"scr_char_map_functions","path":"scripts/scr_char_map_functions/scr_char_map_functions.yy",},},
+    {"id":{"name":"scr_char_sprite_functions","path":"scripts/scr_char_sprite_functions/scr_char_sprite_functions.yy",},},
     {"id":{"name":"spr_potted_plant","path":"sprites/spr_potted_plant/spr_potted_plant.yy",},},
     {"id":{"name":"obj_wall","path":"objects/obj_wall/obj_wall.yy",},},
     {"id":{"name":"rm_init","path":"rooms/rm_init/rm_init.yy",},},
