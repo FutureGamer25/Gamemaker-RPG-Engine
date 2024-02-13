@@ -142,7 +142,7 @@ set_effect = function(effect_name, parameters = []) {
 }
 
 set_sound = function(sound) {
-	if (!is_handle(sound) && !is_array(sound)) sound = undefined;
+	if (!audio_exists(sound) && !is_array(sound)) sound = undefined;
 	defaultTypeSound = sound;
 	typeSound = sound;
 }
