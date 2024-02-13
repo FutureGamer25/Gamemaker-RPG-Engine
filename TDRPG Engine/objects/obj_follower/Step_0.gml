@@ -8,10 +8,10 @@ if (newPos > pos) {
 	y = data.y;
 	image_speed = 1 + data.run;
 	char_sprite_dir(charSprite, data.dirX, data.dirY);
-	char_sprite_state_force(charSprite, data.state);
+	char_sprite_state(charSprite, data.state);
 } else {
 	image_speed = 1;
-	char_sprite_state(charSprite, "stand");
+	char_sprite_state_delay(charSprite, "stand");
 }
 
 char_sprite_update(charSprite);

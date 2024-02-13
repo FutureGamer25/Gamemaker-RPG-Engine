@@ -70,16 +70,12 @@ function char_sprite_angle(char_sprite, degrees) {
 
 #region set state
 function char_sprite_state(char_sprite, state_name_or_sprite) {
-	char_sprite_state_delay(char_sprite, state_name_or_sprite, -1);
-}
-
-function char_sprite_state_force(char_sprite, state_name_or_sprite) {
 	char_sprite.targetState = state_name_or_sprite;
 	char_sprite.delayFrame = char_sprite.prevFrame;
 }
 
-//change state after the set interval of frames finishes
-function char_sprite_state_delay(char_sprite, state_name_or_sprite, frame_interval = infinity) {
+//change state after the set interval of frames finishes (defaults to previous state's delay)
+function char_sprite_state_delay(char_sprite, state_name_or_sprite, frame_interval = -1) {
 	char_sprite.targetState = state_name_or_sprite;
 	
 	if (frame_interval < 0) {
