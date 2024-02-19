@@ -144,7 +144,7 @@
     {"id":{"name":"obj_camera","path":"objects/obj_camera/obj_camera.yy",},},
     {"id":{"name":"obj_exit_A","path":"objects/obj_exit_A/obj_exit_A.yy",},},
     {"id":{"name":"spr_player_up","path":"sprites/spr_player_up/spr_player_up.yy",},},
-    {"id":{"name":"obj_cutscene_handler","path":"objects/obj_cutscene_handler/obj_cutscene_handler.yy",},},
+    {"id":{"name":"__cutscene_handler","path":"objects/__cutscene_handler/__cutscene_handler.yy",},},
     {"id":{"name":"modulo","path":"scripts/modulo/modulo.yy",},},
     {"id":{"name":"spr_player_right","path":"sprites/spr_player_right/spr_player_right.yy",},},
     {"id":{"name":"spr_basic_interactable","path":"sprites/spr_basic_interactable/spr_basic_interactable.yy",},},

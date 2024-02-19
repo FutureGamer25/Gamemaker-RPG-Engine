@@ -11,7 +11,7 @@ if useThreads {
 		exit;
 	}
 	
-	global.cutscene_current = id;
+	__cutscene_get_data().current = id;
 	
 	while (array_length(threadCallArr) > 0) {
 		var arr = threadCallArr;
@@ -28,7 +28,7 @@ if useThreads {
 		exit;
 	}
 	
-	global.cutscene_current = id;
+	__cutscene_get_data().current = id;
 	
 	callThread(defaultThread);
 	

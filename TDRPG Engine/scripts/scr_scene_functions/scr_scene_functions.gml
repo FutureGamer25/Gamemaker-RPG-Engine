@@ -1,13 +1,13 @@
 #region add functions
 function scene_func(func, param_array = undefined) {
-	if !is_method(func) func = method(self, func);
+	static data = __cutscene_get_data();
 	
-	with global.cutscene_current.currentThread {
+	if !is_method(func) func = method(self, func);
+	with data.current.currentThread {
 		array_push(funcArr, func);
 		array_push(paramArr, param_array);
 		array_push(skipArr, true);
 		array_push(breakArr, false);
-		//totalScenes ++;
 	}
 }
 
@@ -34,11 +34,11 @@ function scene_preset(param_array, create_func, step_func) {
 
 #region function types
 function scene_set_skip(do_auto_skip) {
-	with global.cutscene_current.currentThread skipArr[array_length(skipArr) - 1] = do_auto_skip;
+	with __cutscene_get_data().current.currentThread skipArr[array_length(skipArr) - 1] = do_auto_skip;
 }
 
 function scene_set_break(do_break) {
-	with global.cutscene_current.currentThread breakArr[array_length(breakArr) - 1] = do_break;
+	with __cutscene_get_data().current.currentThread breakArr[array_length(breakArr) - 1] = do_break;
 }
 #endregion
 
@@ -64,11 +64,11 @@ function scene_struct_set(struct, name, val) {
 }
 
 function scene_label(label_name) {
-	with global.cutscene_current.currentThread labels[$ label_name] = array_length(funcArr);
+	with __cutscene_get_data().current.currentThread labels[$ label_name] = array_length(funcArr);
 }
 
 function scene_goto(label_name) {
-	scene_method(global.cutscene_current.currentThread, function(name) {
+	scene_method(__cutscene_get_data().current.currentThread, function(name) {
 		var index = labels[$ name];
 		if (index = undefined) {
 			show_message("No label in currrent branch with the name \""+name+"\"");
@@ -80,7 +80,7 @@ function scene_goto(label_name) {
 }
 
 function scene_goto_if(label_name, condition_func) {
-	scene_method(global.cutscene_current.currentThread, function(name, func) {
+	scene_method(__cutscene_get_data().current.currentThread, function(name, func) {
 		if func() {
 			var index = labels[$ name];
 			if (index = undefined) {
@@ -98,7 +98,7 @@ function scene_goto_if(label_name, condition_func) {
 #region branches
 function scene_branch_start() {
 	var thread = undefined;
-	with global.cutscene_current {
+	with __cutscene_get_data().current {
 		useThreads = true;
 		thread = newThread();
 		
@@ -119,7 +119,7 @@ function scene_branch_add() {
 }
 
 function scene_branch_end() {
-	with global.cutscene_current {
+	with __cutscene_get_data().current {
 		array_pop(threadStack);
 		currentThread = array_last(threadStack);
 	}
@@ -139,7 +139,7 @@ function scene_thread_start() {
 }
 
 function scene_thread_add() {
-	with global.cutscene_current {
+	with __cutscene_get_data().current {
 		var parentThread = threadStack[array_length(threadStack) - 2];
 		scene_func(function(thread) {
 			thread.threadCount --;
@@ -156,7 +156,7 @@ function scene_thread_add() {
 }
 
 function scene_thread_end() {
-	with global.cutscene_current {
+	with __cutscene_get_data().current {
 		var parentThread = threadStack[array_length(threadStack) - 2];
 		scene_func(function(thread) {
 			thread.threadCount --;
