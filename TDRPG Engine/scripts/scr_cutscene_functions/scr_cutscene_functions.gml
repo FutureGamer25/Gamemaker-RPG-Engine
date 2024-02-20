@@ -1,9 +1,3 @@
-//init
-function __cutscene_get_data() {
-	static data = {current: noone};
-	return data;
-}
-
 function cutscene_create() {
 	var inst = instance_create_depth(0, 0, 0, __cutscene_handler);
 	var func = function() {}; //use method to get the current scope
@@ -40,10 +34,40 @@ function cutscene_unpause(cutscene = __cutscene_get_data().current) {
 	cutscene.play = true;
 }
 
+#region wrappers
+function cutscene_wrapper(getter_method = undefined, setter_method = undefined) {
+	return {
+		get: getter_method ?? function() { return value; },
+		set: setter_method ?? function(v) { value = v; },
+		value: 0
+	}
+}
+
+function cutscene_wrapper_value(value) {
+	var wrapper = cutscene_wrapper();
+	wrapper.set(value);
+}
+
+function cutscene_wrapper_set(wrapper, value) {
+	wrapper.set(value);
+}
+
+function cutscene_wrapper_get(wrapper) {
+	return wrapper.get();
+}
+#endregion
+
 function cutscene_use_variables(cutscene = __cutscene_get_data().current, use_variables) {
 	cutscene.useStringVariables = use_variables;
+}
+
+#region internal
+function __cutscene_get_data() {
+	static data = {current: noone};
+	return data;
 }
 
 function cutscene_thread(cutscene = __cutscene_get_data().current) {
 	return cutscene.currentThread;
 }
+#endregion

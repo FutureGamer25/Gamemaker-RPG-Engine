@@ -56,6 +56,7 @@ function lerp_type(val1, val2, amount, interpolate_type) {
 	
 	static type = {
 		"linear" : [0, function(val) { return val; }],
+		"smooth" : [2, quad],
 		"nearest" : [0, function(val) { return (val >= 0.5); }],
 		"hold" : [0, function(val) { return (val >= 1) }],
 		

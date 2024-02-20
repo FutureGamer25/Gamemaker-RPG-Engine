@@ -95,6 +95,12 @@ function scene_goto_if(label_name, condition_func) {
 	scene_set_skip(false);
 }
 
+#region wrappers
+function scene_wrapper_set(wrapper, value) {
+	scene_func(wrapper.set, [value])
+}
+#endregion
+
 #region branches
 function scene_branch_start() {
 	var thread = undefined;
