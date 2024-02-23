@@ -5,6 +5,7 @@ progress = 0;
 defaultTypeSpeed = game_get_speed(gamespeed_fps) / 30;
 defaultTypeSound = undefined;
 playTypeSound = false;
+typeSoundFunc = undefined;
 frame = 0;
 
 //text effects
@@ -41,13 +42,13 @@ set_text = function(str = "") {
 		
 		if (char = "\n") {
 			text = string_insert(newlineStr, text, i + 1);
-			i += string_length(newlineStr);
+			//i += string_length(newlineStr); //comment to enable newlineStr macros
 			continue;
 		}
 		
 		if (char = "\a") { //can't have any of these in there
 			text = string_delete(text, i, 1);
-			i --;
+			i--;
 			continue;
 		}
 		
@@ -85,6 +86,7 @@ set_text = function(str = "") {
 			newStr += "\a" + string_format(index, 2, 0);
 		}
 		
+		var skipLen = string_length(newStr); //variables can be used as macros
 		var variable = command[$ "variable"];
 		if (variable != undefined) {
 			if is_method(variable) {
@@ -96,7 +98,7 @@ set_text = function(str = "") {
 		
 		text = string_delete(text, i, endPos - i + 1);
 		text = string_insert(newStr, text, i);
-		i += string_length(newStr) - 1;
+		i += skipLen - 1;
 	}
 	
 	typeTimer = 1;
@@ -139,6 +141,20 @@ set_effect = function(effect_name, parameters = []) {
 	defaultTextRender = command[$ "render"];
 	defaultTransformParams = parameters;
 	defaultRenderParams = parameters;
+}
+
+set_render_func = function(func) {
+	if is_method(func) {
+		defaultTextRender = func;
+		defaultRenderParams = [];
+	} else {
+		defaultTextRender = undefined;
+		defaultRenderParams = undefined;
+	}
+}
+
+set_sound_func = function(func) {
+	typeSoundFunc = is_method(func)? func: undefined;
 }
 
 set_sound = function(sound) {

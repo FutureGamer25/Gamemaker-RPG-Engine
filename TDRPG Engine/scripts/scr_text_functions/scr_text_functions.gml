@@ -41,6 +41,14 @@ function text_set_effect(text_obj, effect_name, parameters = []) {
 	text_obj.set_effect(effect_name, parameters);
 }
 
+function text_set_render_func(text_obj, func) {
+	text_obj.set_render_func(func);
+}
+
+function text_set_sound_func(text_obj, func) {
+	text_obj.set_sound_func(func);
+}
+
 function text_set_speed(text_obj, spd) {
 	text_obj.set_speed(spd);
 }

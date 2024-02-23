@@ -35,6 +35,12 @@ if playTypeSound {
 			snd = typeSound[ irandom(array_length(typeSound) - 1) ];
 			if (!is_handle(snd)) snd = -1;
 		}
-		if audio_exists(snd) audio_play_sound(snd, 0, false, global.__text_data.gain);
+		if audio_exists(snd) {
+			if is_method(typeSoundFunc) {
+				typeSoundFunc(snd);
+			} else {
+				audio_play_sound(snd, 0, false, global.__text_data.gain);
+			}
+		}
 	}
 }
