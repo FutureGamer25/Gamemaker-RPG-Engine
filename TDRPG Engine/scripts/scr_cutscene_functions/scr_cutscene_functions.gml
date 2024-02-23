@@ -1,7 +1,6 @@
 function cutscene_create() {
 	var inst = instance_create_depth(0, 0, 0, __cutscene_handler);
-	var func = function() {}; //use method to get the current scope
-	inst.parentScope = method_get_self(func);
+	inst.parentScope = method_get_self(method(self, cutscene_create));
 	__cutscene_get_data().current = inst;
 	return inst;
 }
