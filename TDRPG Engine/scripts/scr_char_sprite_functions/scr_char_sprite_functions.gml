@@ -1,18 +1,23 @@
 #region char sprite map
-function __char_sprite_map_state_create(sprite_map, state_name) {
-	var struct = sprite_map.state[$ state_name];
-	if (struct = undefined) {
-		struct = {sprite: -1, delay: 0};
-		sprite_map.state[$ state_name] = struct;
+function __char_sprite_map_class() constructor {
+	defaultState = "";
+	state = {};
+	
+	static create_state = function(state_name) {
+		var struct = state[$ state_name];
+		if (struct = undefined) {
+			struct = {sprite: -1, delay: 1};
+			state[$ state_name] = struct;
+		}
+		return struct;
 	}
-	return struct;
+	static get_state = function(state_name) {
+		return state[$ state_name];
+	}
 }
 
 function char_sprite_map_create() {
-	return {
-		defaultState : "",
-		state : {}
-	};
+	return new __char_sprite_map_class();
 }
 
 function char_sprite_map_default(sprite_map, default_state) {
@@ -20,19 +25,19 @@ function char_sprite_map_default(sprite_map, default_state) {
 }
 
 function char_sprite_map_1dir(sprite_map, state_name, sprite) {
-	__char_sprite_map_state_create(sprite_map, state_name).sprite = [sprite];
+	sprite_map.create_state(state_name).sprite = [sprite];
 }
 
 function char_sprite_map_4dir(sprite_map, state_name, up, down, left, right) {
-	__char_sprite_map_state_create(sprite_map, state_name).sprite = [right, down, left, up];
+	sprite_map.create_state(state_name).sprite = [right, down, left, up];
 }
 
 function char_sprite_map_8dir(sprite_map, state_name, right, up_right, up, up_left, left, down_left, down, down_right) {
-	__char_sprite_map_state_create(sprite_map, state_name).sprite = [right, down_right, down, down_left, left, up_left, up, up_right];
+	sprite_map.create_state(state_name).sprite = [right, down_right, down, down_left, left, up_left, up, up_right];
 }
 
 function char_sprite_map_delay(sprite_map, state_name, frame_interval = infinity) {
-	__char_sprite_map_state_create(sprite_map, state_name).delay = frame_interval;
+	sprite_map.create_state(state_name).delay = frame_interval;
 }
 #endregion
 
@@ -41,19 +46,51 @@ function char_sprite_map_delay(sprite_map, state_name, frame_interval = infinity
 #region char sprite
 
 #region create
+function __char_sprite_class(sprite_map, inst_id) constructor {
+	static init = function() {
+		angle = 90;
+		targetAngle = 90;
+		prevFrame = 0;
+		var defState = stateMap.defaultState;
+		state = defState;
+		
+		//state params
+		targetState = defState;
+		delayFrame = 0;
+		initFrame = 0;
+		delayCallback = undefined;
+		
+		refresh_state();
+	}
+	static refresh_state = function() {
+		stateStruct = stateMap.get_state(state);
+	}
+	
+	static set_state = function(state, index, delay, callback) {
+		targetState = state;
+		initFrame = index;
+		delayCallback = callback;
+		if (delay <= 0) {
+			delayFrame = prevFrame;
+			return;
+		}
+		if (delay = infinity) {
+			delayFrame = infinity;
+			return;
+		}
+		delayFrame = (floor(prevFrame / delay) + 1) * delay;
+	}
+	static get_delay = function() {
+		return (stateStruct = undefined)? 0: stateStruct.delay;
+	}
+	
+	parent = inst_id;
+	stateMap = sprite_map;
+	init();
+}
+
 function char_sprite_create(sprite_map, inst_id = id) {
-	var defState = sprite_map.defaultState;
-	return {
-		parent : inst_id,
-		stateMap : sprite_map,
-		angle : 90,
-		targetAngle : 90,
-		state : defState,
-		targetState : defState,
-		stateStruct : sprite_map.state[$ defState],
-		prevFrame : 0,
-		delayFrame : 0
-	};
+	return new __char_sprite_class(sprite_map, inst_id);
 }
 #endregion
 
@@ -69,29 +106,48 @@ function char_sprite_angle(char_sprite, degrees) {
 #endregion
 
 #region set state
-function char_sprite_state(char_sprite, state_name_or_sprite) {
-	char_sprite.targetState = state_name_or_sprite;
-	char_sprite.delayFrame = char_sprite.prevFrame;
+function char_sprite_state(char_sprite, state_name_or_sprite, callback = undefined) {
+	char_sprite.set_state(state_name_or_sprite, 0, 0, callback);
 }
 
-//change state after the set interval of frames finishes (defaults to previous state's delay)
-function char_sprite_state_delay(char_sprite, state_name_or_sprite, frame_interval = -1) {
-	char_sprite.targetState = state_name_or_sprite;
+function char_sprite_state_sync(char_sprite, state_name_or_sprite, callback = undefined) {
+	char_sprite.set_state(state_name_or_sprite, undefined, 0, callback);
+}
+
+//change state at the interval given by the previous state
+function char_sprite_state_delay(char_sprite, state_name_or_sprite, callback = undefined) {
+	char_sprite.set_state(state_name_or_sprite, 0, char_sprite.get_delay(), callback);
+}
+
+//change state at the set frame interval
+function char_sprite_state_delay_frames(char_sprite, state_name_or_sprite, delay_frames, callback = undefined) {
+	char_sprite.set_state(state_name_or_sprite, 0, delay_frames, callback);
+}
+
+function char_sprite_state_ext(char_sprite, state_name_or_sprite, params) {
+	static syncHash = variable_get_hash("sync");
+	static indexHash = variable_get_hash("image_index");
+	static delayHash = variable_get_hash("delay");
+	static framesHash = variable_get_hash("delay_frames");
+	static callbackHash = variable_get_hash("callback");
 	
-	if (frame_interval < 0) {
-		var struct = char_sprite.stateStruct;
-		frame_interval = (struct = undefined)? 0: struct.delay;
+	var index;
+	if (struct_get_from_hash(params, syncHash) ?? false) {
+		index = undefined;
+	} else {
+		index = struct_get_from_hash(params, indexHash) ?? 0;
 	}
+	var delay = struct_get_from_hash(params, framesHash);
+	if (delay = undefined) {
+		if (struct_get_from_hash(params, delayHash) ?? false) {
+			delay = char_sprite.get_delay();
+		} else {
+			delay = 0;
+		}
+	}
+	var callback = struct_get_from_hash(params, callbackHash);
 	
-	if (frame_interval = 0) {
-		char_sprite.delayFrame = char_sprite.prevFrame;
-		return;
-	}
-	if (frame_interval = infinity) {
-		char_sprite.delayFrame = infinity;
-		return;
-	}
-	char_sprite.delayFrame = (floor(char_sprite.prevFrame / frame_interval) + 1) * frame_interval;
+	char_sprite.set_state(state_name_or_sprite, index, delay, callback);
 }
 #endregion
 
@@ -101,15 +157,18 @@ function char_sprite_update(char_sprite) {
 	var par = char.parent;
 	
 	#region update state
+	var prev = char.prevFrame;
+	char.prevFrame = par.image_index;
 	if (char.state != char.targetState) {
-		if (par.image_number <= 1 || par.image_index >= char.delayFrame || par.image_index < char.prevFrame) {
+		if (par.image_number <= 1 || par.image_index >= char.delayFrame || par.image_index < prev) {
 			//state has changed
 			char.state = char.targetState;
-			char.stateStruct = char.stateMap.state[$ char.state];
-			par.image_index = 0;
+			char.stateStruct = char.stateMap.get_state(char.state);
+			var initFrame = char.initFrame;
+			if is_real(initFrame) par.image_index = initFrame;
+			if is_method(char.delayCallback) char.delayCallback();
 		}
 	}
-	char.prevFrame = par.image_index;
 	
 	if is_real(char.state) { //state is a sprite
 		par.sprite_index = char.state;
@@ -118,55 +177,46 @@ function char_sprite_update(char_sprite) {
 	#endregion
 	
 	#region update angle and sprite
+	static getSprite = function(spriteData) {
+		if is_struct(spriteData) return spriteData.sprite_index;
+		return spriteData;
+	}
+	
 	var state = char.stateStruct;
 	if (state = undefined) {
 		par.sprite_index = -1;
 		return;
 	}
-	var sprite = state.sprite;
-	if (!is_array(sprite)) {
+	var spriteArr = state.sprite;
+	if (!is_array(spriteArr)) {
 		par.sprite_index = -1;
 		return;
 	}
 	
-	var num = array_length(sprite);
-	if (num = 1) {
-		char.angle = 0;
-		par.sprite_index = sprite[0];
-		return;
-	}
-	
-	var angle = char.targetAngle * num / 360;
-	var index = round(angle) % num;
-	if ((index * 360 != char.angle * num) && abs(frac(angle) * 2 - 1) <= 0.2) {
-		var midAng = (floor(angle) + 0.5) * 360 / num;
-		index = ((midAng - char.angle + 360) % 360 < 180 ? floor(angle) : ceil(angle)) % num;
+	var num = array_length(spriteArr);
+	var index = 0;
+	if (num > 1) {
+		var angle = char.targetAngle * num / 360;
+		index = round(angle) % num;
+		if ((index * 360 != char.angle * num) && abs(frac(angle) * 2 - 1) <= 0.2) {
+			var midAng = (floor(angle) + 0.5) * 360 / num;
+			index = ((midAng - char.angle + 360) % 360 < 180 ? floor(angle) : ceil(angle)) % num;
+		}
 	}
 	char.angle = index * 360 / num;
-	par.sprite_index = sprite[index];
+	par.sprite_index = getSprite(spriteArr[index]);
 	#endregion
 }
 #endregion
 
 #region extra
 function char_sprite_reset(char_sprite) {
-	var sprite_map = char_sprite.stateMap;
-	var defState = sprite_map.defaultState;
-	char_sprite.angle = 90;
-	char_sprite.targetAngle = 90;
-	char_sprite.state = defState;
-	char_sprite.targetState = defState;
-	char_sprite.stateStruct = sprite_map.state[$ defState];
-	char_sprite.prevFrame = 0;
-	char_sprite.delayFrame = 0;
+	char_sprite.init();
 }
 
 function char_sprite_set_map(char_sprite, sprite_map) {
-	var defState = sprite_map.defaultState;
 	char_sprite.stateMap = sprite_map;
-	char_sprite.state = defState;
-	char_sprite.targetState = defState;
-	char_sprite.stateStruct = sprite_map.state[$ defState];
+	char_sprite.refresh_state();
 }
 
 function char_sprite_get_state(char_sprite) {
