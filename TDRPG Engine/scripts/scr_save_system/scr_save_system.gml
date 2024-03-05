@@ -1,63 +1,82 @@
 #region key functions
 function save_key(key, value) {
-	global.saveData.data.general[$ key] = value;
+	static saveData = __save_get_data();
+	saveData.data.general[$ key] = value;
 }
 
 function load_key(key, _default) {
-	return global.saveData.data.general[$ key] ?? _default;
+	static saveData = __save_get_data();
+	return saveData.data.general[$ key] ?? _default;
 }
 
 function save_key_room(key, value) {
+	static saveData = __save_get_data();
 	var roomName = room_get_name(room);
-	var rm = global.saveData.data.rooms[$ roomName];
+	var rm = saveData.data.rooms[$ roomName];
 	if is_undefined(rm) {
 		rm = {};
-		global.saveData.data.rooms[$ roomName] = rm;
+		saveData.data.rooms[$ roomName] = rm;
 	}
 	rm[$ key] = value;
 }
 
 function load_key_room(key, _default) {
+	static saveData = __save_get_data();
 	var roomName = room_get_name(room);
-	var rm = global.saveData.data.rooms[$ roomName];
+	var rm = saveData.data.rooms[$ roomName];
 	if is_undefined(rm) return _default;
 	return rm[$ key] ?? _default;
 }
 
 function save_key_static(key, value) {
-	global.saveData.staticData[$ key] = value;
-	save_json(global.saveFileStatic, global.saveData.staticData);
+	var saveData = __save_get_data();
+	saveData.dataStatic[$ key] = value;
+	save_json(saveData.fileStatic, saveData.dataStatic);
 }
 
 function load_key_static(key, _default) {
-	return global.saveData.staticData[$ key] ?? _default;
+	static saveData = __save_get_data();
+	return saveData.dataStatic[$ key] ?? _default;
 }
 
 function save_key_global(key, value) {
-	global.saveDataGlobal[$ key] = value;
-	save_json(global.saveFileGlobal, global.saveDataGlobal);
+	var saveData = __save_get_data();
+	saveData.dataGlobal[$ key] = value;
+	save_json(saveData.fileGlobal, saveData.dataGlobal);
 }
 
 function load_key_global(key, _default) {
-	return global.saveDataGlobal[$ key] ?? _default;
+	static saveData = __save_get_data();
+	return saveData.dataGlobal[$ key] ?? _default;
 }
 #endregion
 
 #region misc functions
 function save_set_slot(slot_index) {
-	global.saveSlot = slot_index;
+	var saveData = __save_get_data();
+	saveData.slot = slot_index;
 	var file = save_slot_get_fnames(slot_index);
-	global.saveFile = file[0];
-	global.saveFileStatic = file[1];
+	saveData.file = file[0];
+	saveData.fileStatic = file[1];
 }
 
 function save_get_slot() {
-	return global.saveSlot;
+	return __save_get_data().slot;
 }
 
 function save_slot_exists(slot_index) {
 	var file = save_slot_get_fnames(slot_index);
 	return (file_exists(file[0]) || file_exists(file[1]));
+}
+
+function save_slot_delete(slot_index) {
+	var file = save_slot_get_fnames(slot_index);
+	if (file_exists(file[0])) {
+		file_delete(file[0]);
+	}
+	if (file_exists(file[1])) {
+		file_delete(file[1]);
+	}
 }
 
 function save_slot_get_fnames(slot_index) {
@@ -66,43 +85,50 @@ function save_slot_get_fnames(slot_index) {
 }
 
 function load_slot_temp_start(slot_index) {
-	global.saveDataOld = global.saveData;
-	global.saveSlotOld = save_get_slot();
+	var saveData = __save_get_data();
+	saveData.tempSlot = save_get_slot();
+	saveData.tempData = saveData.data;
+	saveData.tempDataStatic = saveData.dataStatic;
 	save_set_slot(slot_index);
 	load_all_data();
 }
 
 function load_slot_temp_end() {
-	save_set_slot(global.saveSlotOld);
-	global.saveData = global.saveDataOld;
+	var saveData = __save_get_data();
+	save_set_slot(saveData.tempSlot);
+	saveData.data = saveData.tempData;
+	saveData.dataStatic = saveData.tempDataStatic;
 }
 
 function save_reset_keys() {
-	global.saveData = {
-		data : {
-			general : {},
-			rooms : {}
-		},
-		staticData : {}
+	var saveData = __save_get_data();
+	saveData.data = {
+		general : {},
+		rooms : {}
 	};
+	saveData.dataStatic = {};
 }
 #endregion
 
 #region game data
 function save_all_data() {
-	save_json(global.saveFile, global.saveData.data);
+	var saveData = __save_get_data();
+	save_json(saveData.file, saveData.data);
 	
-	if (struct_names_count(global.saveData.staticData) > 0) {
-		save_json(global.saveFileStatic, global.saveData.staticData);
+	if (struct_names_count(saveData.dataStatic) > 0 || file_exists(saveData.fileStatic)) {
+		save_json(saveData.fileStatic, saveData.dataStatic);
 	}
 }
 
 function load_all_data() {
+	var saveData = __save_get_data();
 	save_reset_keys();
-	var data = load_json(global.saveFile);
-	if (!is_undefined(data)) global.saveData.data = data;
 	
-	global.saveData.staticData = load_json(global.saveFileStatic) ?? {};
+	var data = load_json(saveData.file);
+	if (!is_undefined(data)) saveData.data = data;
+	
+	var dataStatic = load_json(saveData.fileStatic);
+	if (!is_undefined(dataStatic)) saveData.dataStatic = dataStatic;
 }
 #endregion
 
@@ -125,8 +151,25 @@ function load_json(file_name) {
 #endregion
 
 #region init
-global.saveFileGlobal = "save_global";
-global.saveDataGlobal = load_json(global.saveFileGlobal) ?? {};
+function __save_get_data() {
+	static saveData = {
+		slot: 0,
+		data: {},
+		dataStatic: {},
+		dataGlobal: {},
+		file: "",
+		fileStatic: "",
+		fileGlobal: "save_global",
+		
+		tempSlot: 0,
+		tempData: {},
+		tempDataStatic: {},
+	};
+	return saveData;
+}
+
+var saveData = __save_get_data();
+saveData.dataGlobal = load_json(saveData.fileGlobal) ?? {};
 save_set_slot(0);
 save_reset_keys();
 #endregion
