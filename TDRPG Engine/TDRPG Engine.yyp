@@ -142,6 +142,7 @@
     {"id":{"name":"obj_exit_B","path":"objects/obj_exit_B/obj_exit_B.yy",},},
     {"id":{"name":"snd_dialog_harsh","path":"sounds/snd_dialog_harsh/snd_dialog_harsh.yy",},},
     {"id":{"name":"obj_camera","path":"objects/obj_camera/obj_camera.yy",},},
+    {"id":{"name":"scr_state_machine","path":"scripts/scr_state_machine/scr_state_machine.yy",},},
     {"id":{"name":"obj_exit_A","path":"objects/obj_exit_A/obj_exit_A.yy",},},
     {"id":{"name":"spr_player_up","path":"sprites/spr_player_up/spr_player_up.yy",},},
     {"id":{"name":"__cutscene_handler","path":"objects/__cutscene_handler/__cutscene_handler.yy",},},
