@@ -1,5 +1,6 @@
 function lang_get_array(key) {
-	var text = ds_map_find_value(global.lang_text, key);
+	static textMap = __lang_get_data().text;
+	var text = ds_map_find_value(textMap, key);
 	
 	if is_undefined(text) {
 		if (string_copy(key, 1, 5) = "[raw]") {

@@ -1,3 +1,3 @@
 function lang_set_newline(str) {
-	global.lang_newline_str = str;
+	__lang_get_data().newlineStr = str;
 }

@@ -1,16 +1,19 @@
 function lang_file_load(name) {
-	if (ds_map_exists(global.lang_files, name)) return;
+	var langData = __lang_get_data();
+	if (ds_map_exists(langData.files, name)) return;
 	
-	var key_arr = [];
+	var keyArr = [];
 	var key = undefined;
 	var pages;
-	ds_map_add(global.lang_files, name, key_arr);
+	ds_map_add(langData.files, name, keyArr);
+	var newlineStr = langData.newlineStr;
+	var textMap = langData.text;
 	
-	var dir = global.lang_directory + name;
+	var dir = langData.directory + name;
 	
 	if (!file_exists(dir)) {
 		show_message("Language file \""+name+"\" does not exist in directory \""
-			+global.lang_directory_name+"\".");
+			+langData.directoryName+"\".");
 		return;
 	}
 	
@@ -22,15 +25,35 @@ function lang_file_load(name) {
 		line = string_trim_start(line);
 		var char = string_char_at(line, 1);
 		
-		if (char = "[") { //get key
+		if (char = "[") { //keys and commands
 			var endPos = string_pos_ext("]", line, 3);
-			key = string_copy(line, 2, endPos - 2);
-			pages = [];
-			array_push(key_arr, key);
-			ds_map_set(global.lang_text, key, pages);
-			
-			line = string_trim_start(string_delete(line, 1, endPos));
-			char = string_char_at(line, 1);
+			if (endPos > 2) { //get key
+				key = string_copy(line, 2, endPos - 2);
+				pages = [];
+				array_push(keyArr, key);
+				ds_map_set(textMap, key, pages);
+				
+				line = string_trim_start(string_delete(line, 1, endPos));
+				char = string_char_at(line, 1);
+			} else { //get lang commands
+				#region split string
+				if (endPos != 2) continue;
+				line = string_trim(string_delete(line, 1, 2));
+				var arr = string_split_ext(line, [" ", "\t"], false, 1);
+				var command = arr[0];
+				var param = "";
+				if (array_length(arr) > 1) param = string_trim_start(arr[1]);
+				#endregion
+				
+				#region run command
+				switch (command) {
+				case "newline":
+					newlineStr = param;
+					break;
+				}
+				#endregion
+				continue;
+			}
 		}
 		
 		if (is_undefined(key)) continue;
@@ -39,7 +62,7 @@ function lang_file_load(name) {
 			var endPos = string_last_pos("\"", line);
 			if (endPos = 0) endPos = string_length(line);
 			line = string_copy(line, 2, endPos - 2);
-		} else {
+		} else { //non-quoted text
 			var comment = string_pos("//", line);
 			if (comment != 0) {
 				line = string_copy(line, 1, comment - 1);
@@ -49,7 +72,7 @@ function lang_file_load(name) {
 			if (line = "") continue;
 		}
 		
-		line = string_replace_all(line, global.lang_newline_str, "\n");
+		line = string_replace_all(line, newlineStr, "\n");
 		array_push(pages, line);
 	}
 	
