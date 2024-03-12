@@ -1,11 +1,13 @@
 {
-  "resourceType": "GMScript",
-  "resourceVersion": "1.0",
-  "name": "scr_anime_functions",
-  "isCompatibility": false,
-  "isDnD": false,
-  "parent": {
-    "name": "Animation",
-    "path": "folders/TDRPG Engine/Systems/Animation.yy",
+  "$GMScript":"",
+  "%Name":"scr_anime_functions",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_anime_functions",
+  "parent":{
+    "name":"Animation",
+    "path":"folders/TDRPG Engine/Systems/Animation.yy",
   },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

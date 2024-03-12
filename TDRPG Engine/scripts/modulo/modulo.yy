@@ -1,11 +1,13 @@
 {
-  "resourceType": "GMScript",
-  "resourceVersion": "1.0",
-  "name": "modulo",
-  "isCompatibility": false,
-  "isDnD": false,
-  "parent": {
-    "name": "Functions",
-    "path": "folders/TDRPG Engine/Functions.yy",
+  "$GMScript":"",
+  "%Name":"modulo",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"modulo",
+  "parent":{
+    "name":"Functions",
+    "path":"folders/TDRPG Engine/Functions.yy",
   },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

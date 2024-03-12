@@ -1,11 +1,13 @@
 {
-  "resourceType": "GMScript",
-  "resourceVersion": "1.0",
-  "name": "lerp_to",
-  "isCompatibility": false,
-  "isDnD": false,
-  "parent": {
-    "name": "Functions",
-    "path": "folders/TDRPG Engine/Functions.yy",
+  "$GMScript":"",
+  "%Name":"lerp_to",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"lerp_to",
+  "parent":{
+    "name":"Functions",
+    "path":"folders/TDRPG Engine/Functions.yy",
   },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }
