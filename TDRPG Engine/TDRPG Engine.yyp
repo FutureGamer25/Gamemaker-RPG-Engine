@@ -103,7 +103,6 @@
     {"id":{"name":"scr_anime_functions","path":"scripts/scr_anime_functions/scr_anime_functions.yy",},},
     {"id":{"name":"get_input","path":"scripts/get_input/get_input.yy",},},
     {"id":{"name":"scr_inventory_functions","path":"scripts/scr_inventory_functions/scr_inventory_functions.yy",},},
-    {"id":{"name":"scr_item_functions","path":"scripts/scr_item_functions/scr_item_functions.yy",},},
     {"id":{"name":"Sprite1","path":"sprites/Sprite1/Sprite1.yy",},},
     {"id":{"name":"slerp_to","path":"scripts/slerp_to/slerp_to.yy",},},
     {"id":{"name":"scr_scene_functions","path":"scripts/scr_scene_functions/scr_scene_functions.yy",},},

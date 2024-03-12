@@ -33,3 +33,14 @@ global.items = {
 	"candy" : new __item_heal("Candy", "Good for the soul.", 5),
 	"new_item" : new __item_heal_all("Unnamed", "Undescribable.", 10)
 };
+
+#region functions
+//item_run("candy", {member: 0, inv: global.inv, remove});
+function item_run(item_key, struct = {}) {
+	global.items[$ item_key].run(struct);
+}
+
+function item_struct(item_key) {
+	return global.items[$ item_key];
+}
+#endregion

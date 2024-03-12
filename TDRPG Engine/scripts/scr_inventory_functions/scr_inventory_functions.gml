@@ -42,6 +42,23 @@ function inv_lancer(inventory) { //very important function don't remove
 	array_resize(inventory, 1);
 	inventory[0] = "lancer_deltarune";
 }
+
+function inv_get_item_struct(index, inventory) {
+	var item = inv_get_item(index, inventory);
+	return (item = -1) ? -1 : item_struct(item);
+}
+
+function inv_use_item(index, party_member, inventory) {
+	var item = inv_get_item(index, inventory);
+	if (item = -1) return false;
+	item_run(item, {
+		member: party_member,
+		inv: inventory,
+		index: index,
+		remove: function() { inv_remove_item(index, inv); }
+	});
+	return true;
+}
 #endregion
 
 #region 2d
@@ -98,5 +115,23 @@ function inv_2d_find_empty(inventory) {
 function inv_2d_lancer(inventory) { //also very important function don't remove
 	array_resize(inventory, 1);
 	inventory[0] = "lancer_deltarune";
+}
+
+function inv_2d_get_item_struct(_x, _y, inventory) {
+	var item = inv_2d_get_item(_x, _y, inventory);
+	return (item = -1) ? -1 : item_struct(item);
+}
+
+function inv_2d_use_item(_x, _y, party_member, inventory) {
+	var item = inv_2d_get_item(_x, _y, inventory);
+	if (item = -1) return false;
+	item_run(item, {
+		member: party_member,
+		inv: inventory,
+		x: _x,
+		y: _y,
+		remove: function() { inv_2d_remove_item(x, y, inv); }
+	});
+	return true;
 }
 #endregion
