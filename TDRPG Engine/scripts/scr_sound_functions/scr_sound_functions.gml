@@ -1,4 +1,5 @@
 #region internal
+///@ignore
 function __sound_get_data_struct() {
 	static data = {
 		group: {},
@@ -8,6 +9,7 @@ function __sound_get_data_struct() {
 	return data;
 }
 
+///@ignore
 function __sound_get_category_data(category, read_only = false) {
 	static catTable = __sound_get_data_struct().category;
 	static nullData = {
@@ -36,6 +38,7 @@ function __sound_get_category_data(category, read_only = false) {
 	return data;
 }
 
+///@ignore
 function __sound_get_category_group_data(group) {
 	static groupTable = __sound_get_data_struct().group;
 	var data = groupTable[$ group];
@@ -49,8 +52,19 @@ function __sound_get_category_group_data(group) {
 	return data;
 }
 
+///@ignore
 function __sound_update_category_gain(cat_struct) {
 	cat_struct.bus.gain = cat_struct.gain * cat_struct.groupGain;
+}
+#endregion
+
+#region general
+function sound_master_gain(gain) {
+	audio_master_gain(gain);
+}
+
+function sound_master_get_gain() {
+	return audio_get_master_gain(0);
 }
 #endregion
 

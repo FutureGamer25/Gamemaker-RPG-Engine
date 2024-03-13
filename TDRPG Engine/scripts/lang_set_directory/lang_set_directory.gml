@@ -1,7 +1,7 @@
 function lang_set_directory(name = "") {
 	var langData = __lang_get_data();
 	var dir = working_directory + name;
-	if (name != "") && (string_char_at(name, string_length(name)) != "\\") {
+	if (string_char_at(dir, string_length(dir)) != "\\") {
 		dir += "\\";
 	}
 	

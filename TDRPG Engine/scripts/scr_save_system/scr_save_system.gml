@@ -151,6 +151,7 @@ function load_json(file_name) {
 #endregion
 
 #region init
+///@ignore
 function __save_get_data() {
 	static saveData = {
 		slot: 0,

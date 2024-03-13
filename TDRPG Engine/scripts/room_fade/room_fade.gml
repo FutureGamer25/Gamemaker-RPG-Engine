@@ -1,10 +1,10 @@
-function room_fade(numb, color = c_black) {
+function room_fade(index, color = c_black, seconds = 0.4) {
 	with obj_room_fade {
-		if fadeIn return -1;
+		if fadeIn return noone;
 	}
-	
 	var inst = instance_create_depth(0, 0, 0, obj_room_fade);
 	inst.color = color;
-	inst.newRoom = numb;
+	inst.fadeSpeed = 1 / (seconds * game_get_speed(gamespeed_fps));
+	inst.newRoom = index;
 	return inst;
 }

@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"scr_follower_setup",
   "parent":{
-    "name":"Follower",
-    "path":"folders/TDRPG Engine/Systems/Follower.yy",
+    "name":"Followers",
+    "path":"folders/General/Followers.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

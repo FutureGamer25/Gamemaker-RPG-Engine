@@ -1,3 +1,4 @@
+///@ignore
 function __get_pause_data_struct() {
 	static data = {
 		array: [], //array of active types

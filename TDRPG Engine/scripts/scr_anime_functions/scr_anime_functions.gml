@@ -2,10 +2,7 @@
 
 ///@return {Struct.__anime_class}
 function create_anime(start_val) {
-	var a = new __anime_class(start_val);
-	a.id = weak_ref_create(a);
-	return a;
-	//return new __anime_class(start_val);
+	return new __anime_class(start_val);
 }
 
 ///@return {Struct.__anime_class}
@@ -19,36 +16,36 @@ function __anime_class(start_val) constructor {
 	static add = function(val, frames, ease_type = "linear") {
 		if (frames < 1) {
 			show_message("ANIME: Frames cannot be less than 1.")
-			return id.ref;
+			return self;
 		}
 		array_push(data, {
 			val : val,
 			frames : frames,
 			type :  ease_type
 		});
-		return id.ref;
+		return self;
 	}
 	
 	///@return {Struct.__anime_class}
 	static loop = function(_loop = true) {
 		doLoop = _loop;
-		return id.ref;
+		return self;
 	}
 	
 	///@return {Struct.__anime_class}
 	static start = function(call_method = func) {
-		if (array_length(data) = 0) return id.ref;
+		if (array_length(data) = 0) return self;
 		index = -1;
 		x2 = xStart;
 		nextData();
 		func = call_method;
 		if (!is_method(func)) {
 			show_message("ANIME: Cannot start without call method.");
-			return id.ref;
+			return self;
 		}
 		stop();
 		timeSource = call_later(1, time_source_units_frames, callback, true);
-		return id.ref;
+		return self;
 	}
 	
 	///@return {Struct.__anime_class}
@@ -57,7 +54,7 @@ function __anime_class(start_val) constructor {
 			call_cancel(timeSource);
 			timeSource = -1;
 		}
-		return id.ref;
+		return self;
 	}
 	
 	/**@ignore*/ static nextData = function() {
@@ -94,11 +91,10 @@ function __anime_class(start_val) constructor {
 	/**@ignore*/ frame = 0;
 	/**@ignore*/ maxFrames = 1;
 	/**@ignore*/ type = "";
-	/**@ignore*/ func = -1;
+	/**@ignore*/ func = undefined;
 	/**@ignore*/ doLoop = false;
 	
 	/**@ignore*/ data = [];
 	/**@ignore*/ index = -1;
 	/**@ignore*/ timeSource = -1;
-	/**@ignore*/ id = -1;
 }

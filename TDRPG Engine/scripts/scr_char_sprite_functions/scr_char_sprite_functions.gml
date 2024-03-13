@@ -1,4 +1,5 @@
 #region char sprite map
+///@ignore
 function __char_sprite_map_class() constructor {
 	defaultState = "";
 	state = {};
@@ -46,6 +47,7 @@ function char_sprite_map_delay(sprite_map, state_name, frame_interval = infinity
 #region char sprite
 
 #region create
+///@ignore
 function __char_sprite_class(sprite_map, inst_id) constructor {
 	static init = function() {
 		angle = 90;
