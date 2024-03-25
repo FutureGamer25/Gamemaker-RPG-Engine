@@ -2,8 +2,7 @@
 if (!room_exists(new_room)) exit;
 
 if (!changeRoom) {
-	playerDirX = char_sprite_get_x(obj_player.charSprite);
-	playerDirY = char_sprite_get_y(obj_player.charSprite);
+	playerAngle = char_sprite_get_angle(obj_player.charSprite);
 	
 	set_pause(true);
 	changeRoom = true;

@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"get_input",
   "parent":{
-    "name":"Functions",
-    "path":"folders/TDRPG Engine/Functions.yy",
+    "name":"Scripts",
+    "path":"folders/Scripts.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

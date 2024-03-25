@@ -11,7 +11,7 @@
   "overriddenProperties":[],
   "parent":{
     "name":"Room Fading",
-    "path":"folders/TDRPG Engine/Systems/Room Fading.yy",
+    "path":"folders/General/Room Fading.yy",
   },
   "parentObjectId":null,
   "persistent":true,

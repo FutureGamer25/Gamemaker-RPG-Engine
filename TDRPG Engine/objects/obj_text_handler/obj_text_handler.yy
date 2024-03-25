@@ -10,7 +10,7 @@
   "overriddenProperties":[],
   "parent":{
     "name":"Text",
-    "path":"folders/TDRPG Engine/Systems/Text.yy",
+    "path":"folders/RPG Engine/Systems/Text.yy",
   },
   "parentObjectId":null,
   "persistent":false,

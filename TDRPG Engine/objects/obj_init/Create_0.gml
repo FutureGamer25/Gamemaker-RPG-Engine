@@ -57,6 +57,7 @@ dialog_character("jeff", sprite_2, sprite_0, snd_dialog_sans, {
 });
 #endregion
 
+follower_set_delay(ceil(0.4 * game_get_speed(gamespeed_fps)));
 depth_sort_set_layer("depth");
 instance_create_depth(0, 0, 0, obj_game);
 

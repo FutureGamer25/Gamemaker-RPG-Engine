@@ -200,44 +200,16 @@ function sound_play(sound, loops, category = undefined, gain = 1, offset = 0, pi
 	return audio_play_sound_on(catStruct.emitter, sound, loops, catStruct.priority, gain, offset, pitch);
 }
 
-function sound_play_fade(sound, loops, seconds, category = undefined, gain = 1, offset = 0, pitch = 1) {
-	var index = sound_play(sound, loops, category, 0, offset, pitch);
-	sound_gain(index, gain, seconds);
-	return index;
-}
-
 function sound_stop(index) {
 	audio_stop_sound(index);
-}
-
-function sound_stop_fade(index, seconds) {
-	static callback = function(index) {
-		audio_stop_sound(index);
-	}
-	sound_gain(index, 0, seconds, callback, [index]);
 }
 
 function sound_pause(index) {
 	audio_pause_sound(index);
 }
 
-function sound_pause_fade(index, seconds) {
-	static callback = function(index, gain) {
-		audio_pause_sound(index);
-		audio_sound_gain(index, gain, 0);
-	}
-	sound_gain(index, 0, seconds, callback, [index, audio_sound_get_gain(index)]);
-}
-
 function sound_resume(index) {
 	audio_resume_sound(index);
-}
-
-function sound_resume_fade(index, seconds) {
-	var gain = audio_sound_get_gain(index);
-	audio_sound_gain(index, 0, 0);
-	audio_resume_sound(index);
-	audio_sound_gain(index, gain, seconds * 1000);
 }
 
 function sound_gain(index, volume, seconds = 0, callback = undefined, args = undefined) {

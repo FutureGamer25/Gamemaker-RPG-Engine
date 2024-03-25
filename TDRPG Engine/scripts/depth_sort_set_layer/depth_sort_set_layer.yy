@@ -6,7 +6,7 @@
   "name":"depth_sort_set_layer",
   "parent":{
     "name":"Depth Sorting",
-    "path":"folders/TDRPG Engine/Systems/Depth Sorting.yy",
+    "path":"folders/RPG Engine/Systems/Depth Sorting.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

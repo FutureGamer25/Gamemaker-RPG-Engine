@@ -1,9 +1,9 @@
 {
   "$GMScript":"",
-  "%Name":"scr_follower_setup",
+  "%Name":"scr_followers",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"scr_follower_setup",
+  "name":"scr_followers",
   "parent":{
     "name":"Followers",
     "path":"folders/General/Followers.yy",

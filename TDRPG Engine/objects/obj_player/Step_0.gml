@@ -1,6 +1,8 @@
 if get_pause() {
 	running = false;
 	char_sprite_state_delay(charSprite, "stand");
+	char_sprite_update(charSprite);
+	follower_update(false, undefined)
 } else {
 
 
@@ -71,10 +73,15 @@ if interact {
 }
 #endregion
 
-if moving follower_add_data();
+char_sprite_update(charSprite);
+follower_update(moving, {
+	x: x,
+	y: y,
+	dirX: char_sprite_get_x(charSprite),
+	dirY: char_sprite_get_y(charSprite),
+	state: char_sprite_get_state(charSprite),
+	run: running,
+});
 
 
 } //end pause
-
-
-char_sprite_update(charSprite);

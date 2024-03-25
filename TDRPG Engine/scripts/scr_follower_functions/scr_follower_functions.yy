@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"scr_follower_functions",
   "parent":{
-    "name":"Follower",
-    "path":"folders/TDRPG Engine/Systems/Follower.yy",
+    "name":"Systems",
+    "path":"folders/RPG Engine/Systems.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

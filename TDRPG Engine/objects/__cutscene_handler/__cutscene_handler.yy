@@ -10,7 +10,7 @@
   "overriddenProperties":[],
   "parent":{
     "name":"Cutscenes",
-    "path":"folders/TDRPG Engine/Systems/Animation/Cutscenes.yy",
+    "path":"folders/RPG Engine/Systems/Animation/Cutscenes.yy",
   },
   "parentObjectId":null,
   "persistent":true,

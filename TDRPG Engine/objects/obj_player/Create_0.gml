@@ -6,5 +6,5 @@ interactList = ds_list_create();
 
 charSprite = char_sprite_create(global.charMapPlayer);
 
-follower_add();
-follower_add();
+follower_create(obj_follower, id);
+follower_create(obj_follower, id);

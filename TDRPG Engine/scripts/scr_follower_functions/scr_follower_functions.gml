@@ -1,143 +1,278 @@
-#region setup
-function follower_set_delay(seconds) {
-	global.follower_delay = seconds;
-}
-
-function follower_set_player(obj) {
-	global.follower_player = obj;
+#region internal
+///@ignore
+function __follower_get_data() {
+	static Class = function() constructor {
+		getIndex = function(obj) {
+			var len = array_length(followers);
+			for (var i=0; i<len; i++) {
+				var fol = followers[i].instance;
+				if (obj = fol) return i;
+				if (obj = fol.object_index) return i;
+			}
+			return -1;
+		}
+		refreshOffsets = function() {
+			endOffset = 0;
+			var back = playerDelayBack;
+			var len = array_length(followers);
+			for (var i=0; i<len; i++) {
+				var fol = followers[i];
+				endOffset += fol.delayFront + back;
+				fol.offset = endOffset;
+				back = fol.delayBack;
+			}
+			historyReserve(endOffset + 1);
+		}
+		historyReserve = function(size) {
+			var oldSize = array_length(history);
+			if (size = oldSize) return;
+			if (size > oldSize) array_resize(history, size);
+			var newIndex =  max(0, historyIndex + size - oldSize);
+			array_copy(history, newIndex, history, historyIndex, oldSize - historyIndex);
+			historyIndex = newIndex;
+			if (size < oldSize) array_resize(history, size);
+			if (historyLength > size) historyLength = size;
+		}
+		historyPushFront = function(data) {
+			var reserved = array_length(history);
+			if (historyLength < reserved) historyLength ++;
+			historyIndex --;
+			if (historyIndex < 0) historyIndex += reserved; //fake modulo
+			history[historyIndex] = data;
+		}
+		historyGet = function(index) {
+			if (index < 0 || index >= historyLength) return undefined;
+			return history[(historyIndex + index) % array_length(history)];
+		}
+		historySet = function(index, data) {
+			if (index < 0 || index >= historyLength) return;
+			history[(historyIndex + index) % array_length(history)] = data;
+		}
+		
+		history = [undefined];
+		historyIndex = 0;
+		historyLength = 0;
+		
+		defaultDelayFront = 1;
+		defaultDelayBack = 0;
+		playerDelayBack = 0;
+		followers = [];
+		maxPosition = -1;
+		endOffset = 0;
+	}
+	static data = new Class();
+	return data;
 }
 #endregion
 
-function follower_add(obj = obj_follower) {
-	if (!instance_exists(obj_follower_controller)) {
-		instance_create_depth(0, 0, 0, obj_follower_controller);
+#region delay
+///@param {Real} frames
+function follower_set_delay(frames) {
+	__follower_get_data().defaultDelayFront = frames;
+}
+
+///@param {Real} frames
+function follower_set_back_delay(frames) {
+	__follower_get_data().defaultDelayBack = frames;
+}
+
+///@param {Real} frames
+function follower_player_set_back_delay(frames) {
+	__follower_get_data().playerDelayBack = frames;
+}
+#endregion
+
+#region add / remove
+///@param {Id.Instance} instance
+///@param {Struct} parameters
+function follower_add(instance, parameters = {}) {
+	static folData = __follower_get_data();
+	static frontHash = variable_get_hash("delay");
+	static backHash = variable_get_hash("back_delay");
+	
+	var delFront = struct_get_from_hash(parameters, frontHash) ?? folData.defaultDelayFront;
+	var delBack = struct_get_from_hash(parameters, backHash) ?? folData.defaultDelayBack;
+	
+	var struct = {
+		instance: instance,
+		delayFront: delFront,
+		delayBack: delBack,
+		offset: 0,
+		position: 0,
+		prevPosition: 0,
+	}
+	array_push(folData.followers, struct);
+	folData.refreshOffsets();
+	
+	var pos = folData.maxPosition - max(0, min(struct.offset, folData.historyLength - 1));
+	struct.position = pos;
+	struct.prevPosition = pos;
+}
+
+///@param {Asset.GMObject} follower_obj
+///@param {Id.Instance|Asset.GMObject} player_obj
+function follower_create(follower_obj, player_obj = noone) {
+	var inst;
+	if instance_exists(player_obj) {
+		inst = instance_create_layer(player_obj.x, player_obj.y, player_obj.layer, follower_obj);
+	} else {
+		inst = instance_create_depth(0, 0, 0, follower_obj);
+	}
+	follower_add(inst);
+}
+
+///@param {Id.Instance|Asset.GMObject} obj
+///@param {Bool} destroy
+function follower_remove(obj, destroy = false) {
+	static folData = __follower_get_data();
+	follower_remove_index(folData.getIndex(obj), destroy);
+}
+
+///@param {Bool} destroy
+function follower_remove_all(destroy = false) {
+	static folData = __follower_get_data();
+	var followers = folData.followers;
+	if destroy {
+		var len = array_length(followers);
+		for (var i=0; i<len; i++) {
+			instance_destroy(followers[i].instance);
+		}
+	}
+	array_resize(followers, 0);
+	folData.refreshOffsets();
+}
+
+///@param {Real} index
+///@param {Bool} destroy
+function follower_remove_index(index, destroy = false) {
+	static folData = __follower_get_data();
+	var followers = folData.followers;
+	if (index < 0 || index >= array_length(followers)) return;
+	if (destroy) instance_destroy(followers[index].instance);
+	array_delete(followers, index, 1);
+	folData.refreshOffsets();
+	
+}
+
+///@param {Id.Instance|Asset.GMObject} obj
+function follower_destroy(obj) {
+	follower_remove(obj, true)
+}
+
+function follower_destroy_all() {
+	follower_remove_all(true);
+}
+#endregion
+
+#region followers
+///@param {Bool} is_player_moving
+///@param {Any} player_data
+function follower_update(is_player_moving, player_data) {
+	static folData = __follower_get_data();
+	
+	if (is_player_moving) {
+		folData.historyPushFront(player_data);
+		folData.maxPosition ++;
 	}
 	
-	with obj_follower_controller {
-		var fol = instance_create_layer(obj_player.x, obj_player.y, obj_player.layer, obj);
-		follower[folCount] = fol;
-		fol.init(folCount);
-		folCount ++;
-		return fol;
+	var maxPosition = folData.maxPosition;
+	var followers = folData.followers;
+	var len = array_length(followers);
+	for (var i=0; i<len; i++) {
+		var fol = followers[i];
+		fol.prevPosition = fol.position;
+		if ((maxPosition - fol.offset) > fol.position) fol.position ++; //auto move
 	}
 }
 
-function follower_remove(obj) {
-	with obj_follower_controller {
-		var index = array_find_index(follower, function(elem, ind) {
-			if elem = obj return true;
-			return (elem.object_index = obj);
-		});
-		
-		if (index = -1) return false;
-		return follower_remove_index(index);
+///@param {Id.Instance|Asset.GMObject} obj
+///@return {Real}
+function follower_get_index(obj = id) {
+	static folData = __follower_get_data();
+	return folData.getIndex(obj);
+}
+
+///@param {Real} index
+///@return {Id.Instance}
+function follower_get_instance(index) {
+	static folData = __follower_get_data();
+	if (index < 0 || index >= array_length(folData.followers)) return noone;
+	return folData.followers[index].instance;
+}
+
+///@param {Id.Instance|Asset.GMObject} obj
+///@return {Any}
+function follower_get_history(obj = id) {
+	return follower_history_get(follower_get_history_pos(obj));
+}
+
+///@param {Id.Instance|Asset.GMObject} obj
+///@return {Bool}
+function follower_has_valid_history(obj = id) {
+	return follower_history_get(follower_get_history_pos(obj)) != undefined;
+}
+
+///@param {Id.Instance|Asset.GMObject} obj
+///@return {Real}
+function follower_get_history_pos(obj = id) {
+	static folData = __follower_get_data();
+	return folData.followers[folData.getIndex(obj)].position;
+}
+
+///@param {Id.Instance|Asset.GMObject} obj
+///@return {Bool}
+function follower_has_moved_history(obj = id) {
+	static folData = __follower_get_data();
+	var fol = folData.followers[folData.getIndex(obj)];
+	return fol.position != fol.prevPosition;
+}
+#endregion
+
+#region history
+function follower_history_clear() {
+	static folData = __follower_get_data();
+	
+	folData.historyLength = 0;
+	folData.maxPosition = -1;
+	
+	var followers = folData.followers;
+	var len = array_length(followers);
+	for (var i=0; i<len; i++) {
+		var fol = followers[i];
+		fol.position = -1;
+		fol.prevPosition = -1;
 	}
 }
 
-function follower_remove_index(index) {
-	with obj_follower_controller {
-		if (index >= array_length(follower)) return false;
-		
-		instance_destroy(follower[index]);
-		array_delete(follower, index, 1);
-		folCount --;
-		
-		var maxSize = folCount * folSpacing + 1;
-		if (array_length(data) > maxSize) {
-			array_resize(data, maxSize);
-		}
-		
-		for (var i=index; i<folCount; i++) {
-			follower[i].init(i);
-		}
-		
-		return true;
-	}
+///@param {Any} data
+function follower_history_push(data) {
+	static folData = __follower_get_data();
+	folData.historyPushFront(data);
 }
 
-function follower_reset() { //set to player position
-	with obj_follower_controller {
-		data = [];
-		data[0] = new __follower_data_obj(global.follower_player);
-		
-		for (var i=0; i<folCount; i++) {
-			follower[i].init(i);
-		}
-	}
+///@param {Real} position
+///@return {Any}
+function follower_history_get(position) {
+	static folData = __follower_get_data();
+	return folData.historyGet(folData.maxPosition - position);
 }
 
-function follower_remove_all() {
-	with obj_follower_controller {
-		for (var i=0; i<folCount; i++) {
-			instance_destroy(follower[i]);
-		}
-		instance_destroy();
-	}
+///@param {Real} position
+///@param {Any} data
+function follower_history_set(position, data) {
+	static folData = __follower_get_data();
+	folData.historySet(folData.maxPosition - position, data);
 }
 
-function follower_add_data() {
-	with obj_follower_controller {
-		playerPos ++;
-		array_insert(data, 0, new __follower_data_obj(global.follower_player));
-		var maxSize = folCount * folSpacing + 1;
-		if (array_length(data) > maxSize) {
-			array_resize(data, maxSize);
-		}
-	}
+///@return {Real}
+function follower_history_min_pos() {
+	static folData = __follower_get_data();
+	return folData.maxPosition - folData.historyLength + 1;
 }
 
-function follower_path() { //create snake at current follower positions
-	with obj_follower_controller {
-		var pos1 = 0;
-		var x1 = obj_player.x;
-		var y1 = obj_player.y;
-		var x2 = x1;
-		var y2 = y1;
-		var move_x = 0;
-		var move_y = 0;
-		
-		for (var i=0; i<folCount; i++) {
-			var fol = follower[i];
-			var pos2 = (i + 1) * folSpacing;
-			x2 = fol.x;
-			y2 = fol.y;
-			move_x = (x1 - x2) / folSpacing;
-			move_y = (y1 - y2) / folSpacing;
-			
-			for (var j=pos1; j<pos2; j++) {
-				var n = (j - pos1) / folSpacing;
-				var _x = lerp(x1, x2, n);
-				var _y = lerp(y1, y2, n);
-				data[j] = new __follower_data_pos(_x, _y, move_x, move_y);
-			}
-			
-			pos1 = pos2;
-			x1 = x2;
-			y1 = y2;
-		}
-		
-		data[folCount * folSpacing + 1] = new __follower_data_pos(x2, y2, move_x, move_y);
-	}
+///@return {Real}
+function follower_history_max_pos() {
+	static folData = __follower_get_data();
+	return folData.maxPosition;
 }
-
-
-
-//called by followers
-
-function follower_get_pos(follower_index) {
-	with obj_follower_controller {
-		return playerPos - min(array_length(data) - 1, (follower_index + 1) * folSpacing);
-	}
-}
-
-function follower_get_player_pos() {
-	with obj_follower_controller {
-		return playerPos;
-	}
-}
-
-function follower_get_data(pos) {
-	with obj_follower_controller {
-		return data[clamp(playerPos - pos, 0, array_length(data) - 1)];
-	}
-}
+#endregion

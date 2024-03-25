@@ -12,7 +12,7 @@
   "overriddenProperties":[],
   "parent":{
     "name":"Depth Sorting",
-    "path":"folders/TDRPG Engine/Systems/Depth Sorting.yy",
+    "path":"folders/RPG Engine/Systems/Depth Sorting.yy",
   },
   "parentObjectId":null,
   "persistent":true,

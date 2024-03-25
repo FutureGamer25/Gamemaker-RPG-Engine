@@ -6,7 +6,7 @@
   "name":"room_fade",
   "parent":{
     "name":"Room Fading",
-    "path":"folders/TDRPG Engine/Systems/Room Fading.yy",
+    "path":"folders/General/Room Fading.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

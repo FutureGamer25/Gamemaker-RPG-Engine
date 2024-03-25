@@ -6,7 +6,7 @@
   "name":"slerp_to_2d",
   "parent":{
     "name":"Functions",
-    "path":"folders/TDRPG Engine/Functions.yy",
+    "path":"folders/RPG Engine/Functions.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

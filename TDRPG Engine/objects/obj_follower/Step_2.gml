@@ -1,9 +1,5 @@
-var newPos = follower_get_pos(index);
-
-if (newPos > pos) {
-	pos = newPos
-	var data = follower_get_data(pos);
-	
+if (follower_has_moved_history() && follower_has_valid_history()) {
+	var data = follower_get_history();
 	x = data.x;
 	y = data.y;
 	image_speed = 1 + data.run;

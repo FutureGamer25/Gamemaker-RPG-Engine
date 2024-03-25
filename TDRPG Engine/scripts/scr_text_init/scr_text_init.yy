@@ -6,7 +6,7 @@
   "name":"scr_text_init",
   "parent":{
     "name":"Text",
-    "path":"folders/TDRPG Engine/Systems/Text.yy",
+    "path":"folders/RPG Engine/Systems/Text.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

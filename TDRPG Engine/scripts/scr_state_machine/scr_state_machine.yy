@@ -6,7 +6,7 @@
   "name":"scr_state_machine",
   "parent":{
     "name":"Systems",
-    "path":"folders/TDRPG Engine/Systems.yy",
+    "path":"folders/RPG Engine/Systems.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"scr_anime_functions",
   "parent":{
-    "name":"Animation",
-    "path":"folders/TDRPG Engine/Systems/Animation.yy",
+    "name":"Anime",
+    "path":"folders/RPG Engine/Systems/Animation/Anime.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

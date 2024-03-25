@@ -2,7 +2,7 @@ function state_machine(states_struct) constructor {
 	/**@ignore*/ static enterHash = variable_get_hash("enter");
 	/**@ignore*/ static leaveHash = variable_get_hash("leave");
 	
-	static set_state = function(state_name) {
+	static set_state = function(state_name, parameter = undefined) {
 		if (state = state_name) return;
 		
 		if (is_struct(struct)) {
@@ -16,7 +16,7 @@ function state_machine(states_struct) constructor {
 		
 		if (is_struct(struct)) {
 			var func = struct_get_from_hash(struct, enterHash);
-			if (is_method(func)) func();
+			if (is_method(func)) func(parameter);
 		}
 	}
 	
@@ -42,8 +42,8 @@ function state_machine_create(states_struct) {
 	return new state_machine(states_struct);
 }
 
-function state_machine_set_state(machine, state_name) {
-	machine.set_state(state_name);
+function state_machine_set_state(machine, state_name, parameter = undefined) {
+	machine.set_state(state_name, parameter);
 }
 
 function state_machine_get_state(machine) {

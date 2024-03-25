@@ -6,7 +6,7 @@
   "name":"lang_file_force_load",
   "parent":{
     "name":"Language",
-    "path":"folders/TDRPG Engine/Systems/Language.yy",
+    "path":"folders/RPG Engine/Systems/Language.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

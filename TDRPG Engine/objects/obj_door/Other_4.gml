@@ -13,9 +13,8 @@ if instance_exists(obj_player) {
 		obj_player.x = obj.x + (obj.sprite_width / 2);
 		obj_player.y = obj.y + (obj.sprite_height / 2);
 	}
-	
-	char_sprite_dir(obj_player.charSprite, playerDirX, playerDirY);
-	follower_reset();
+	char_sprite_angle(obj_player.charSprite, playerAngle);
+	follower_snap_to_player();
 }
 
 set_pause(false);
