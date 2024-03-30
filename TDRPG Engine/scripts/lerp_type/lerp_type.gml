@@ -1,4 +1,10 @@
-function lerp_type(val1, val2, amount, interpolate_type) {
+///@desc	Interpolate two values with an easing curve.
+///@param {Real} val1				The first value
+///@param {Real} val2				The second value
+///@param {Real} amount				The amount to interpolate
+///@param {String} ease_type		The easing curve
+///@return {Real}
+function lerp_type(val1, val2, amount, ease_type) {
 	#region interpolate functions
 	static quad = function(val) {
 		return val * val;
@@ -127,7 +133,7 @@ function lerp_type(val1, val2, amount, interpolate_type) {
 		"bounce"        : [0, bounce],
 	}
 	
-	var interp = type[$ interpolate_type] ?? type.linear;
+	var interp = type[$ ease_type] ?? type.linear;
 	
 	switch interp[0] {
 	case 0: //normal
@@ -138,14 +144,13 @@ function lerp_type(val1, val2, amount, interpolate_type) {
 		break;
 	case 2: //normal-reverse
 		amount = 2 * amount - 1;
-		var s = sign(amount);
-		amount = 0.5 * (1 - interp[1](1 - s * amount)) * s + 0.5;
+		var s1 = sign(amount);
+		amount = 0.5 * (1 - interp[1](1 - s1 * amount)) * s1 + 0.5;
 		break;
 	case 3: //reverse-normal
 		amount = 2 * amount - 1;
-		//feather disable once all
-		var s = sign(amount);
-		amount = 0.5 * interp[1](s * amount) * s + 0.5;
+		var s2 = sign(amount);
+		amount = 0.5 * interp[1](s2 * amount) * s2 + 0.5;
 		break;
 	}
 	

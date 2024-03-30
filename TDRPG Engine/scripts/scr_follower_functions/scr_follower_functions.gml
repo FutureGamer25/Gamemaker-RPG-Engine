@@ -1,9 +1,12 @@
 #region internal
 ///@ignore
 function __follower_get_data() {
-	static Class = function() constructor {
+	static class = function() constructor {
 		getIndex = function(obj) {
 			var len = array_length(followers);
+			if (cacheIndex >= 0 && cacheIndex < len) {
+				if (obj = followers[cacheIndex].instance) return cacheIndex;
+			}
 			for (var i=0; i<len; i++) {
 				var fol = followers[i].instance;
 				if (obj = fol) return i;
@@ -11,11 +14,16 @@ function __follower_get_data() {
 			}
 			return -1;
 		}
-		refreshOffsets = function() {
+		refreshOffsets = function(startIndex = 0) {
 			endOffset = 0;
 			var back = playerDelayBack;
+			if (startIndex > 0) {
+				var fol = followers[startIndex - 1];
+				endOffset = fol.offset;
+				back = fol.delayBack;
+			}
 			var len = array_length(followers);
-			for (var i=0; i<len; i++) {
+			for (var i=startIndex; i<len; i++) {
 				var fol = followers[i];
 				endOffset += fol.delayFront + back;
 				fol.offset = endOffset;
@@ -23,6 +31,8 @@ function __follower_get_data() {
 			}
 			historyReserve(endOffset + 1);
 		}
+		
+		#region history
 		historyReserve = function(size) {
 			var oldSize = array_length(history);
 			if (size = oldSize) return;
@@ -48,6 +58,7 @@ function __follower_get_data() {
 			if (index < 0 || index >= historyLength) return;
 			history[(historyIndex + index) % array_length(history)] = data;
 		}
+		#endregion
 		
 		history = [undefined];
 		historyIndex = 0;
@@ -59,8 +70,10 @@ function __follower_get_data() {
 		followers = [];
 		maxPosition = -1;
 		endOffset = 0;
+		
+		cacheIndex = -1;
 	}
-	static data = new Class();
+	static data = new class();
 	return data;
 }
 #endregion
@@ -102,7 +115,7 @@ function follower_add(instance, parameters = {}) {
 		prevPosition: 0,
 	}
 	array_push(folData.followers, struct);
-	folData.refreshOffsets();
+	folData.refreshOffsets(array_length(folData.followers) - 1);
 	
 	var pos = folData.maxPosition - max(0, min(struct.offset, folData.historyLength - 1));
 	struct.position = pos;
@@ -197,6 +210,7 @@ function follower_get_index(obj = id) {
 function follower_get_instance(index) {
 	static folData = __follower_get_data();
 	if (index < 0 || index >= array_length(folData.followers)) return noone;
+	folData.cacheIndex = index;
 	return folData.followers[index].instance;
 }
 
