@@ -158,7 +158,6 @@ set_sound_func = function(func) {
 }
 
 set_sound = function(sound) {
-	if (!audio_exists(sound) && !is_array(sound)) sound = undefined;
 	defaultTypeSound = sound;
 	typeSound = sound;
 }

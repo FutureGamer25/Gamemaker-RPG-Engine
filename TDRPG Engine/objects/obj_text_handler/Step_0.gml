@@ -30,17 +30,15 @@ if playTypeSound {
 	playTypeSound = false;
 	if (typeSound != undefined) {
 		var snd = typeSound;
-		if is_array(typeSound) {
-			//feather disable once all
-			snd = typeSound[ irandom(array_length(typeSound) - 1) ];
-			if (!is_handle(snd)) snd = -1;
-		}
-		if audio_exists(snd) {
-			if is_method(typeSoundFunc) {
-				typeSoundFunc(snd);
-			} else {
-				audio_play_sound(snd, 0, false, global.__text_data.gain);
+		if is_method(typeSoundFunc) {
+			typeSoundFunc(snd);
+		} else {
+			if is_array(typeSound) {
+				//feather disable once all
+				snd = typeSound[ irandom(array_length(typeSound) - 1) ];
+				if (!is_handle(snd)) snd = -1;
 			}
+			if audio_exists(snd) audio_play_sound(snd, 0, false, global.__text_data.gain);
 		}
 	}
 }
