@@ -10,18 +10,17 @@ scene_func(function() {
 
 scene_label("label");
 
-scene_thread_start();
-	scene_lerp_func(1, 2, 40, "", function(scale) {
-		asd.image_xscale = scale;
-	});
-	scene_lerp_func(2, 1, 100, "", function(scale) {
-		asd.image_xscale = scale;
-	});
-scene_thread_add();
+scene_branch_start();
 	scene_lerp_func(360, 0, 100, "", function(angle) {
 		asd.image_angle = angle;
 	});
-scene_thread_end();
+scene_branch_end();
+scene_lerp_func(1, 2, 40, "", function(scale) {
+	asd.image_xscale = scale;
+});
+scene_lerp_func(2, 1, 100, "", function(scale) {
+	asd.image_xscale = scale;
+});
 scene_move_speed("v:asd", 60, 0, 2);
 scene_wait(10);
 

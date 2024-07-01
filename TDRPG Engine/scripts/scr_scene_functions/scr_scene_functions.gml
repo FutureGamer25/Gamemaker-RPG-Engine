@@ -119,11 +119,6 @@ function scene_branch_start() {
 	return thread;
 }
 
-function scene_branch_add() {
-	scene_branch_end();
-	return scene_branch_start();
-}
-
 function scene_branch_end() {
 	with __cutscene_get_data().current {
 		array_pop(threadStack);
@@ -139,50 +134,50 @@ function scene_branch_pause(branch) {
 #endregion
 
 #region threads
-function scene_thread_start() {
-	scene_method(cutscene_thread(), function() {threadCount = 1;});
-	return scene_branch_start();
-}
-
-function scene_thread_add() {
-	with __cutscene_get_data().current {
-		var parentThread = threadStack[array_length(threadStack) - 2];
-		scene_func(function(thread) {
-			thread.threadCount --;
-			if (thread.threadCount <= 0) {
-				playThread(thread);
-			}
-		}, [parentThread]);
-	}
-	
-	scene_branch_end();
-	
-	scene_method(cutscene_thread(), function() {threadCount ++;});
-	return scene_branch_start();
-}
-
-function scene_thread_end() {
-	with __cutscene_get_data().current {
-		var parentThread = threadStack[array_length(threadStack) - 2];
-		scene_func(function(thread) {
-			thread.threadCount --;
-			if (thread.threadCount <= 0) {
-				playThread(thread);
-			}
-		}, [parentThread]);
-	}
-	
-	scene_branch_end();
-	
-	scene_method(cutscene_thread(), function() {
-		paused = true;
-	});
-	scene_set_break(true);
-}
-
-function scene_thread_pause(thread) {
-	scene_branch_pause(thread);
-}
+//function scene_thread_start() {
+//	scene_method(cutscene_thread(), function() {threadCount = 1;});
+//	return scene_branch_start();
+//}
+//
+//function scene_thread_add() {
+//	with __cutscene_get_data().current {
+//		var parentThread = threadStack[array_length(threadStack) - 2];
+//		scene_func(function(thread) {
+//			thread.threadCount --;
+//			if (thread.threadCount <= 0) {
+//				playThread(thread);
+//			}
+//		}, [parentThread]);
+//	}
+//	
+//	scene_branch_end();
+//	
+//	scene_method(cutscene_thread(), function() {threadCount ++;});
+//	return scene_branch_start();
+//}
+//
+//function scene_thread_end() {
+//	with __cutscene_get_data().current {
+//		var parentThread = threadStack[array_length(threadStack) - 2];
+//		scene_func(function(thread) {
+//			thread.threadCount --;
+//			if (thread.threadCount <= 0) {
+//				playThread(thread);
+//			}
+//		}, [parentThread]);
+//	}
+//	
+//	scene_branch_end();
+//	
+//	scene_method(cutscene_thread(), function() {
+//		paused = true;
+//	});
+//	scene_set_break(true);
+//}
+//
+//function scene_thread_pause(thread) {
+//	scene_branch_pause(thread);
+//}
 #endregion
 
 function scene_wait(frames) {

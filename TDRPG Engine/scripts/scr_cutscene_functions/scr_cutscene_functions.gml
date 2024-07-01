@@ -66,7 +66,7 @@ function __cutscene_get_data() {
 	return data;
 }
 
-function cutscene_thread(cutscene = __cutscene_get_data().current) {
-	return cutscene.currentThread;
-}
+//function cutscene_thread(cutscene = __cutscene_get_data().current) {
+//	return cutscene.currentThread;
+//}
 #endregion

@@ -1,3 +1,3 @@
 layerName = "depth";
 drawDepth = false;
-priority = ds_priority_create();
+grid = ds_grid_create(2, 1);

@@ -1,1 +1,1 @@
-ds_priority_destroy(priority);
+ds_grid_destroy(grid);

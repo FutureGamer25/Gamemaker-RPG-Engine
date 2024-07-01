@@ -119,6 +119,7 @@
     {"id":{"name":"scr_state_machine","path":"scripts/scr_state_machine/scr_state_machine.yy",},},
     {"id":{"name":"scr_text_functions","path":"scripts/scr_text_functions/scr_text_functions.yy",},},
     {"id":{"name":"scr_text_init","path":"scripts/scr_text_init/scr_text_init.yy",},},
+    {"id":{"name":"scr_menu_stack","path":"scripts/scr_menu_stack/scr_menu_stack.yy",},},
     {"id":{"name":"slerp_to_2d","path":"scripts/slerp_to_2d/slerp_to_2d.yy",},},
     {"id":{"name":"slerp_to","path":"scripts/slerp_to/slerp_to.yy",},},
     {"id":{"name":"snd_dialog_harsh","path":"sounds/snd_dialog_harsh/snd_dialog_harsh.yy",},},
