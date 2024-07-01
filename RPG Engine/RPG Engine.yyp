@@ -1,6 +1,6 @@
 {
   "$GMProject":"",
-  "%Name":"TDRPG Engine",
+  "%Name":"RPG Engine",
   "AudioGroups":[
     {"$GMAudioGroup":"","%Name":"audiogroup_default","name":"audiogroup_default","resourceType":"GMAudioGroup","resourceVersion":"2.0","targets":-1,},
   ],
@@ -53,7 +53,7 @@
   "MetaData":{
     "IDEVersion":"2024.2.0.132",
   },
-  "name":"TDRPG Engine",
+  "name":"RPG Engine",
   "resources":[
     {"id":{"name":"font_arial","path":"fonts/font_arial/font_arial.yy",},},
     {"id":{"name":"__cutscene_handler","path":"objects/__cutscene_handler/__cutscene_handler.yy",},},
