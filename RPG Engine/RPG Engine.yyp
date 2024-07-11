@@ -51,7 +51,7 @@
   "isEcma":false,
   "LibraryEmitters":[],
   "MetaData":{
-    "IDEVersion":"2024.2.0.132",
+    "IDEVersion":"2024.6.1.160",
   },
   "name":"RPG Engine",
   "resources":[
@@ -110,6 +110,7 @@
     {"id":{"name":"scr_init_fonts","path":"scripts/scr_init_fonts/scr_init_fonts.yy",},},
     {"id":{"name":"scr_inventory_functions","path":"scripts/scr_inventory_functions/scr_inventory_functions.yy",},},
     {"id":{"name":"scr_items","path":"scripts/scr_items/scr_items.yy",},},
+    {"id":{"name":"scr_menu_stack","path":"scripts/scr_menu_stack/scr_menu_stack.yy",},},
     {"id":{"name":"scr_party","path":"scripts/scr_party/scr_party.yy",},},
     {"id":{"name":"scr_pause_functions","path":"scripts/scr_pause_functions/scr_pause_functions.yy",},},
     {"id":{"name":"scr_save_and_load_game","path":"scripts/scr_save_and_load_game/scr_save_and_load_game.yy",},},
@@ -119,7 +120,6 @@
     {"id":{"name":"scr_state_machine","path":"scripts/scr_state_machine/scr_state_machine.yy",},},
     {"id":{"name":"scr_text_functions","path":"scripts/scr_text_functions/scr_text_functions.yy",},},
     {"id":{"name":"scr_text_init","path":"scripts/scr_text_init/scr_text_init.yy",},},
-    {"id":{"name":"scr_menu_stack","path":"scripts/scr_menu_stack/scr_menu_stack.yy",},},
     {"id":{"name":"slerp_to_2d","path":"scripts/slerp_to_2d/slerp_to_2d.yy",},},
     {"id":{"name":"slerp_to","path":"scripts/slerp_to/slerp_to.yy",},},
     {"id":{"name":"snd_dialog_harsh","path":"sounds/snd_dialog_harsh/snd_dialog_harsh.yy",},},
