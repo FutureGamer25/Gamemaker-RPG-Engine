@@ -17,10 +17,10 @@ if debug {
 	}
 	
 	if keyboard_check_pressed(vk_f7) {
-		if room_exists(room - 1) room_goto(room - 1);
+		if room_exists(room_previous(room)) room_goto(room_previous(room));
 	}
 	
 	if keyboard_check_pressed(vk_f8) {
-		if room_exists(room + 1) room_goto(room + 1);
+		if room_exists(room_next(room)) room_goto(room_next(room));
 	}
 }

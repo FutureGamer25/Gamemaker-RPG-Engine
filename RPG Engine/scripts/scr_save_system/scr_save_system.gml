@@ -35,7 +35,7 @@ function save_key_static(key, value) {
 }
 
 function load_key_static(key, _default) {
-	static saveData = __save_get_data();
+	var saveData = __save_get_data();
 	return saveData.dataStatic[$ key] ?? _default;
 }
 
@@ -46,12 +46,18 @@ function save_key_global(key, value) {
 }
 
 function load_key_global(key, _default) {
-	static saveData = __save_get_data();
+	var saveData = __save_get_data();
 	return saveData.dataGlobal[$ key] ?? _default;
+}
+
+function load_default_keys() {
+	var saveData = __save_get_data();
+	saveData.data = { general: {}, rooms: {} };
+	saveData.dataStatic = {};
 }
 #endregion
 
-#region misc functions
+#region slot functions
 function save_set_slot(slot_index) {
 	var saveData = __save_get_data();
 	saveData.slot = slot_index;
@@ -99,15 +105,6 @@ function load_slot_temp_end() {
 	saveData.data = saveData.tempData;
 	saveData.dataStatic = saveData.tempDataStatic;
 }
-
-function save_reset_keys() {
-	var saveData = __save_get_data();
-	saveData.data = {
-		general : {},
-		rooms : {}
-	};
-	saveData.dataStatic = {};
-}
 #endregion
 
 #region game data
@@ -122,7 +119,7 @@ function save_all_data() {
 
 function load_all_data() {
 	var saveData = __save_get_data();
-	save_reset_keys();
+	load_default_keys();
 	
 	var data = load_json(saveData.file);
 	if (!is_undefined(data)) saveData.data = data;
@@ -150,27 +147,25 @@ function load_json(file_name) {
 }
 #endregion
 
-#region init
+#region internal
 ///@ignore
 function __save_get_data() {
-	static saveData = {
-		slot: 0,
-		data: {},
-		dataStatic: {},
-		dataGlobal: {},
-		file: "",
-		fileStatic: "",
-		fileGlobal: "save_global",
+	static class = function() constructor {
+		slot = 0;
+		var fnames = save_slot_get_fnames(slot);
+		file = fnames[0];
+		fileStatic = fnames[1];
+		fileGlobal = "save_global";
 		
-		tempSlot: 0,
-		tempData: {},
-		tempDataStatic: {},
-	};
+		data = { general: {}, rooms: {} };
+		dataStatic = {};
+		dataGlobal = load_json(fileGlobal) ?? {};
+		
+		tempSlot = 0;
+		tempData = {};
+		tempDataStatic = {};
+	}
+	static saveData = new class();
 	return saveData;
 }
-
-var saveData = __save_get_data();
-saveData.dataGlobal = load_json(saveData.fileGlobal) ?? {};
-save_set_slot(0);
-save_reset_keys();
 #endregion
