@@ -1,5 +1,5 @@
 {
-  "$GMScript":"",
+  "$GMScript":"v1",
   "%Name":"slerp_to_2d",
   "isCompatibility":false,
   "isDnD":false,

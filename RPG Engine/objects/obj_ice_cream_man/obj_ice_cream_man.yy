@@ -5,7 +5,7 @@
   "managed":true,
   "name":"obj_ice_cream_man",
   "overriddenProperties":[
-    {"$GMOverriddenProperty":"","%Name":"","name":"","objectId":{"name":"obj_basic_interactable","path":"objects/obj_basic_interactable/obj_basic_interactable.yy",},"propertyId":{"name":"dialog_key_1","path":"objects/obj_basic_interactable/obj_basic_interactable.yy",},"resourceType":"GMOverriddenProperty","resourceVersion":"2.0","value":"ice_cream_salesman",},
+    {"$GMOverriddenProperty":"v1","%Name":"","name":"","objectId":{"name":"obj_basic_interactable","path":"objects/obj_basic_interactable/obj_basic_interactable.yy",},"propertyId":{"name":"dialog_key_1","path":"objects/obj_basic_interactable/obj_basic_interactable.yy",},"resource":null,"resourceType":"GMOverriddenProperty","resourceVersion":"2.0","value":"ice_cream_salesman",},
   ],
   "parent":{
     "name":"Test Stuff",

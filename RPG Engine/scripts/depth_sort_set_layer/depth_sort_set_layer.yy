@@ -1,5 +1,5 @@
 {
-  "$GMScript":"",
+  "$GMScript":"v1",
   "%Name":"depth_sort_set_layer",
   "isCompatibility":false,
   "isDnD":false,

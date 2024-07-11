@@ -1,5 +1,5 @@
 {
-  "$GMScript":"",
+  "$GMScript":"v1",
   "%Name":"lang_set_newline",
   "isCompatibility":false,
   "isDnD":false,

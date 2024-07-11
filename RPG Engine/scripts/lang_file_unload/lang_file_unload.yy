@@ -1,5 +1,5 @@
 {
-  "$GMScript":"",
+  "$GMScript":"v1",
   "%Name":"lang_file_unload",
   "isCompatibility":false,
   "isDnD":false,

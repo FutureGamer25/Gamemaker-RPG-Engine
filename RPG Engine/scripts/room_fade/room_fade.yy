@@ -1,5 +1,5 @@
 {
-  "$GMScript":"",
+  "$GMScript":"v1",
   "%Name":"room_fade",
   "isCompatibility":false,
   "isDnD":false,

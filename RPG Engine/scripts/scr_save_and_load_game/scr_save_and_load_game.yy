@@ -1,5 +1,5 @@
 {
-  "$GMScript":"",
+  "$GMScript":"v1",
   "%Name":"scr_save_and_load_game",
   "isCompatibility":false,
   "isDnD":false,

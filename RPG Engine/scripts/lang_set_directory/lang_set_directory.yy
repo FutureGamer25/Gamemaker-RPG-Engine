@@ -1,5 +1,5 @@
 {
-  "$GMScript":"",
+  "$GMScript":"v1",
   "%Name":"lang_set_directory",
   "isCompatibility":false,
   "isDnD":false,

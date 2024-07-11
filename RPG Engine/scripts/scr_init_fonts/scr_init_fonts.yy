@@ -1,5 +1,5 @@
 {
-  "$GMScript":"",
+  "$GMScript":"v1",
   "%Name":"scr_init_fonts",
   "isCompatibility":false,
   "isDnD":false,

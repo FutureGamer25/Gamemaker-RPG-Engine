@@ -1,5 +1,5 @@
 {
-  "$GMScript":"",
+  "$GMScript":"v1",
   "%Name":"game_get_max_scale",
   "isCompatibility":false,
   "isDnD":false,
