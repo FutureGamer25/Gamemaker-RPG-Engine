@@ -185,45 +185,45 @@ function scene_wait(frames) {
 	scene_struct_set(struct, "frame", frames);
 	
 	scene_method_repeat(struct, function() {
-		if (frame <= 0) cutscene_skip();
+		if (frame <= 0) cutscene_next();
 		frame --;
 	});
 }
 
-function scene_lerp_func(x1, x2, frames, ease_type, func) {
-	if (!is_method(func)) func = method(self, func);
+function scene_lerp(x1, x2, frames, ease_type, callback) {
+	if (!is_method(callback)) callback = method(self, callback);
 	
-	static create = function(_x1, _x2, _frames, _type, _func) {
+	static create = function(_x1, _x2, _frames, _type, _callback) {
 		x1 = _x1;
 		x2 = _x2;
 		frame = 0;
 		frameMax = _frames;
 		type = _type;
-		func = _func;
+		callback = _callback;
 	}
 	
 	static step = function() {
 		var val = frame / frameMax;
 		if (val >= 1) {
 			val = 1;
-			cutscene_skip();
+			cutscene_next();
 		}
-		func(lerp_type(x1, x2, val, type));
+		callback(lerp_type(x1, x2, val, type));
 		frame ++;
 	}
 	
-	scene_preset([x1, x2, frames, ease_type, func], create, step);
+	scene_preset([x1, x2, frames, ease_type, callback], create, step);
 }
 
 #region objects
-function scene_set_pos(_id, _x, _y) {
+function scene_obj_set_pos(_id, _x, _y) {
 	scene_func(function(_id, _x, _y) {
 		_id.x = _x;
 		_id.y = _y;
 	}, [_id, _x, _y]);
 }
 
-function scene_move_time(_id, _x, _y, frames) {
+function scene_obj_move(_id, _x, _y, frames) {
 	static create = function(_id, _x, _y, _frames) {
 		inst = _id;
 		oldX = inst.x;
@@ -243,14 +243,14 @@ function scene_move_time(_id, _x, _y, frames) {
 		} else {
 			inst.x = distX + oldX;
 			inst.y = distY + oldY;
-			cutscene_skip();
+			cutscene_next();
 		}
 	}
 	
 	scene_preset([_id, _x, _y, frames], create, step);
 }
 
-function scene_move_speed(_id, _x, _y, _speed) {
+function scene_obj_move_speed(_id, _x, _y, _speed) {
 	static create = function(_id, _x, _y, _speed) {
 		inst = _id;
 		oldX = inst.x;
@@ -271,7 +271,7 @@ function scene_move_speed(_id, _x, _y, _speed) {
 		} else {
 			inst.x = distX + oldX;
 			inst.y = distY + oldY;
-			cutscene_skip();
+			cutscene_next();
 		}
 	}
 	

@@ -15,14 +15,12 @@ function cutscene_destroy(cutscene = __cutscene_get_data().current) {
 	}
 }
 
-function cutscene_run(cutscene = __cutscene_get_data().current) {
-	with cutscene {
-		play = true;
-	}
+function cutscene_start(cutscene = __cutscene_get_data().current) {
+	cutscene.play = true;
 }
 
-function cutscene_skip(cutscene = __cutscene_get_data().current, scene_count = 1) {
-	cutscene.currentThread.sceneIndex += scene_count;
+function cutscene_next(cutscene = __cutscene_get_data().current) {
+	cutscene.currentThread.sceneIndex ++;
 }
 
 function cutscene_pause(cutscene = __cutscene_get_data().current) {
