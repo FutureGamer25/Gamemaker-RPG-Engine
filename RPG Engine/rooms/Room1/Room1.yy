@@ -14,6 +14,7 @@
     {"name":"inst_58F3F4B","path":"rooms/Room1/Room1.yy",},
     {"name":"inst_3F9CCB31","path":"rooms/Room1/Room1.yy",},
     {"name":"inst_1E03A887","path":"rooms/Room1/Room1.yy",},
+    {"name":"inst_4E633FDE","path":"rooms/Room1/Room1.yy",},
   ],
   "isDnd":false,
   "layers":[
@@ -31,6 +32,7 @@
             {"$GMOverriddenProperty":"v1","%Name":"","name":"","objectId":{"name":"obj_door","path":"objects/obj_door/obj_door.yy",},"propertyId":{"name":"exit_letter","path":"objects/obj_door/obj_door.yy",},"resourceType":"GMOverriddenProperty","resourceVersion":"2.0","value":"B",},
           ],"resourceType":"GMRInstance","resourceVersion":"2.0","rotation":0.0,"scaleX":2.0,"scaleY":2.0,"x":208.0,"y":384.0,},
         {"$GMRInstance":"v1","%Name":"inst_404B32AE","colour":4294967295,"frozen":false,"hasCreationCode":false,"ignore":false,"imageIndex":0,"imageSpeed":1.0,"inheritCode":false,"inheritedItemId":null,"inheritItemSettings":false,"isDnd":false,"name":"inst_404B32AE","objectId":{"name":"obj_exit_A","path":"objects/obj_exit_A/obj_exit_A.yy",},"properties":[],"resourceType":"GMRInstance","resourceVersion":"2.0","rotation":0.0,"scaleX":2.0,"scaleY":2.0,"x":208.0,"y":352.0,},
+        {"$GMRInstance":"v1","%Name":"inst_4E633FDE","colour":4294967295,"frozen":false,"hasCreationCode":false,"ignore":false,"imageIndex":0,"imageSpeed":1.0,"inheritCode":false,"inheritedItemId":null,"inheritItemSettings":false,"isDnd":false,"name":"inst_4E633FDE","objectId":{"name":"obj_marker_A","path":"objects/obj_marker_A/obj_marker_A.yy",},"properties":[],"resourceType":"GMRInstance","resourceVersion":"2.0","rotation":0.0,"scaleX":1.0,"scaleY":1.0,"x":48.0,"y":144.0,},
       ],"layers":[],"name":"huh","properties":[],"resourceType":"GMRInstanceLayer","resourceVersion":"2.0","userdefinedDepth":false,"visible":true,},
     {"$GMRAssetLayer":"","%Name":"Assets_1","assets":[
         {"$GMRSpriteGraphic":"","%Name":"graphic_20CDDA18","animationSpeed":1.0,"colour":4294967295,"frozen":false,"headPosition":0.0,"ignore":false,"inheritedItemId":null,"inheritItemSettings":false,"name":"graphic_20CDDA18","resourceType":"GMRSpriteGraphic","resourceVersion":"2.0","rotation":0.0,"scaleX":1.0,"scaleY":1.0,"spriteId":{"name":"spr_cool_room","path":"sprites/spr_cool_room/spr_cool_room.yy",},"x":192.0,"y":344.0,},

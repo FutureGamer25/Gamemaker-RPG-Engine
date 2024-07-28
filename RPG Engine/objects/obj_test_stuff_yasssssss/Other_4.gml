@@ -21,7 +21,9 @@ scene_lerp(1, 2, 40, "", function(scale) {
 scene_lerp(2, 1, 100, "", function(scale) {
 	asd.image_xscale = scale;
 });
-scene_obj_move_speed("v:asd", 60, 0, 2);
+
+scene_obj_move("v:asd", marker_get("A").x, marker_get("A").y, 30);
+scene_obj_move_speed("v:asd", 60, 0, 4);
 scene_wait(10);
 
 scene_obj_move("v:asd", 30, 30, 60);

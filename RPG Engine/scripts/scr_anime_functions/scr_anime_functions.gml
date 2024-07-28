@@ -33,7 +33,7 @@ function __anime_class(def_val, def_loop = false, def_func = undefined, def_data
 	///@return {Struct.__anime_class}
 	static add = function(val, frames, ease_type = "linear") {
 		if (frames < 1) {
-			show_message("ANIME: Frames cannot be less than 1.")
+			show_message("ANIME: Frames cannot be less than 1.");
 			return self;
 		}
 		

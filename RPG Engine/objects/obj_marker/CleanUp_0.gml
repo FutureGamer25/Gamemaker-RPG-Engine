@@ -1,0 +1,1 @@
+marker_unregister(name);
