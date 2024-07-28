@@ -133,53 +133,6 @@ function scene_branch_pause(branch) {
 }
 #endregion
 
-#region threads
-//function scene_thread_start() {
-//	scene_method(cutscene_thread(), function() {threadCount = 1;});
-//	return scene_branch_start();
-//}
-//
-//function scene_thread_add() {
-//	with __cutscene_get_data().current {
-//		var parentThread = threadStack[array_length(threadStack) - 2];
-//		scene_func(function(thread) {
-//			thread.threadCount --;
-//			if (thread.threadCount <= 0) {
-//				playThread(thread);
-//			}
-//		}, [parentThread]);
-//	}
-//	
-//	scene_branch_end();
-//	
-//	scene_method(cutscene_thread(), function() {threadCount ++;});
-//	return scene_branch_start();
-//}
-//
-//function scene_thread_end() {
-//	with __cutscene_get_data().current {
-//		var parentThread = threadStack[array_length(threadStack) - 2];
-//		scene_func(function(thread) {
-//			thread.threadCount --;
-//			if (thread.threadCount <= 0) {
-//				playThread(thread);
-//			}
-//		}, [parentThread]);
-//	}
-//	
-//	scene_branch_end();
-//	
-//	scene_method(cutscene_thread(), function() {
-//		paused = true;
-//	});
-//	scene_set_break(true);
-//}
-//
-//function scene_thread_pause(thread) {
-//	scene_branch_pause(thread);
-//}
-#endregion
-
 function scene_wait(frames) {
 	var struct = {};
 	scene_struct_set(struct, "frame", frames);
@@ -203,13 +156,13 @@ function scene_lerp(x1, x2, frames, ease_type, callback) {
 	}
 	
 	static step = function() {
+		frame ++;
 		var val = frame / frameMax;
-		if (val >= 1) {
-			val = 1;
+		if (val > 1) {
 			cutscene_next();
+			return;
 		}
 		callback(lerp_type(x1, x2, val, type));
-		frame ++;
 	}
 	
 	scene_preset([x1, x2, frames, ease_type, callback], create, step);
@@ -235,16 +188,16 @@ function scene_obj_move(_id, _x, _y, frames) {
 	}
 	
 	static step = function() {
-		if (pos < frames) {
-			pos += 1;
-			var percent = pos / frames;
-			inst.x = oldX + distX * percent;
-			inst.y = oldY + distY * percent;
-		} else {
+		pos ++;
+		if (pos > frames) {
 			inst.x = distX + oldX;
 			inst.y = distY + oldY;
 			cutscene_next();
+			return;
 		}
+		var percent = pos / frames;
+		inst.x = oldX + distX * percent;
+		inst.y = oldY + distY * percent;
 	}
 	
 	scene_preset([_id, _x, _y, frames], create, step);
@@ -263,16 +216,16 @@ function scene_obj_move_speed(_id, _x, _y, _speed) {
 	}
 	
 	static step = function() {
-		if (pos < dist) {
-			pos += spd;
-			var percent = pos / dist;
-			inst.x = oldX + distX * percent;
-			inst.y = oldY + distY * percent;
-		} else {
+		pos += spd;
+		if (pos > dist) {
 			inst.x = distX + oldX;
 			inst.y = distY + oldY;
 			cutscene_next();
+			return;
 		}
+		var percent = pos / dist;
+		inst.x = oldX + distX * percent;
+		inst.y = oldY + distY * percent;
 	}
 	
 	scene_preset([_id, _x, _y, _speed], create, step);

@@ -59,12 +59,9 @@ function cutscene_use_variables(cutscene = __cutscene_get_data().current, use_va
 }
 
 #region internal
+///@ignore
 function __cutscene_get_data() {
 	static data = {current: noone};
 	return data;
 }
-
-//function cutscene_thread(cutscene = __cutscene_get_data().current) {
-//	return cutscene.currentThread;
-//}
 #endregion
