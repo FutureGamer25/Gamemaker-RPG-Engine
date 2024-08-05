@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"lang_file_unload",
+  "%Name":"scr_lang_functions",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"lang_file_unload",
+  "name":"scr_lang_functions",
   "parent":{
-    "name":"Language",
-    "path":"folders/RPG Engine/Systems/Language.yy",
+    "name":"Systems",
+    "path":"folders/RPG Engine/Systems.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",
