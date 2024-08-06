@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"scr_lang_functions",
   "parent":{
-    "name":"Systems",
-    "path":"folders/RPG Engine/Systems.yy",
+    "name":"Language",
+    "path":"folders/RPG Engine/Systems/Language.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",
