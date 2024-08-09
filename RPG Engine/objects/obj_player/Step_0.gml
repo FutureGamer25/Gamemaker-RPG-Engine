@@ -19,27 +19,29 @@ image_speed = 1 + running;
 var moveX = horizontal * moveSpeed
 var moveY = vertical * moveSpeed;
 
-if (moveX != 0) {
-	x += moveX;
-	if place_meeting(x, y, obj_wall) {
-		x = floor(x);
-		while (place_meeting(x, y, obj_wall)) {
-			x -= sign(moveX);
-		}
-		moveX = 0;
-	}
-}
+//if (moveX != 0) {
+//	x += moveX;
+//	if place_meeting(x, y, obj_wall) {
+//		x = floor(x);
+//		while (place_meeting(x, y, obj_wall)) {
+//			x -= sign(moveX);
+//		}
+//		moveX = 0;
+//	}
+//}
+//
+//if (moveY != 0) {
+//	y += moveY;
+//	if place_meeting(x, y, obj_wall) {
+//		y = floor(y);
+//		while (place_meeting(x, y, obj_wall)) {
+//			y -= sign(moveY);
+//		}
+//		moveY = 0;
+//	}
+//}
 
-if (moveY != 0) {
-	y += moveY;
-	if place_meeting(x, y, obj_wall) {
-		y = floor(y);
-		while (place_meeting(x, y, obj_wall)) {
-			y -= sign(moveY);
-		}
-		moveY = 0;
-	}
-}
+move_and_collide_ext(moveX, moveY, obj_wall, 60, slide_mode_square, true);
 
 var moving = (moveX != 0 || moveY != 0);
 #endregion
