@@ -112,6 +112,7 @@
     {"id":{"name":"scr_followers","path":"scripts/scr_followers/scr_followers.yy",},},
     {"id":{"name":"scr_gui_functions","path":"scripts/scr_gui_functions/scr_gui_functions.yy",},},
     {"id":{"name":"scr_init_fonts","path":"scripts/scr_init_fonts/scr_init_fonts.yy",},},
+    {"id":{"name":"scr_interact_functions","path":"scripts/scr_interact_functions/scr_interact_functions.yy",},},
     {"id":{"name":"scr_inventory_functions","path":"scripts/scr_inventory_functions/scr_inventory_functions.yy",},},
     {"id":{"name":"scr_items","path":"scripts/scr_items/scr_items.yy",},},
     {"id":{"name":"scr_lang_functions","path":"scripts/scr_lang_functions/scr_lang_functions.yy",},},

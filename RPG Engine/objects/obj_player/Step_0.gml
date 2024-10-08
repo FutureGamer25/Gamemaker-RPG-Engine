@@ -58,18 +58,7 @@ char_sprite_dir(charSprite, horizontal, vertical);
 if interact {
 	var faceX = char_sprite_get_x(charSprite);
 	var faceY = char_sprite_get_y(charSprite);
-	var xx = x + faceX * interactDist;
-	var yy = y + faceY * interactDist;
-	ds_list_clear(interactList);
-	instance_place_list(xx, yy, all, interactList, false);
-	
-	for (var i=0; i<ds_list_size(interactList); i++) {
-		var inst = interactList[|i];
-		if asset_has_tags(inst.object_index, "interact", asset_object) {
-			with inst event_user(0);
-			break;
-		}
-	}
+	interact_instance_place(x + faceX * interactDist, y + faceY * interactDist);
 }
 #endregion
 

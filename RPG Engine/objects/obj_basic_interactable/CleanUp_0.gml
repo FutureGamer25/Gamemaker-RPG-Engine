@@ -1,0 +1,1 @@
+interaction_destroy(interaction);
