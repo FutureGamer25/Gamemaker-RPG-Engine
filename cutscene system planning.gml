@@ -29,6 +29,10 @@ scene_obj_move_relative(obj_player, 0, 32, 1);
 scene_wait(2);
 scene_template(template1);
 scene_lerp(/*idk stuff here*/);
+scene_anim_start(0);
+scene_anim_pos(5, 1);
+scene_anim_pos(3, 1);
+scene_anim_end();
 //cutscene runs automatically
 
 
@@ -44,12 +48,40 @@ function scene_wait(_time) {
 	scene_add_event(_wait, _time);
 }
 
+//alternate
+function scene_wait(_time) {
+	static _func = function(_time) {
+		static _wait = function(_time) constructor {
+			_timer = _time;
+			static _step = function(_dt) {
+				_timer -= _dt;
+				if (_timer <= 0) cutscene_next();
+			}
+		}
+		cutscene_set_step(new _wait(_time)._step);
+	}
+	scene_call(_func, _time);
+}
+
 
 function scene_obj_destroy(_inst) {
 	static _func = function(_inst) {
 		instance_destroy(_inst);
 	}
 	scene_call(_func, _inst);
+}
+
+//alternate
+function scene_obj_destroy(_inst) {
+	static _func = function(_inst) constructor {
+		instance_destroy(_inst);
+	}
+	scene_add_event(_func, _inst);
+}
+
+
+function scene_lerp(_val1, _val2, _time, _callback) {
+	scene_add_interpolator();
 }
 
 
