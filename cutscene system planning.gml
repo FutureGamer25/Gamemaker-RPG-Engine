@@ -9,6 +9,19 @@ cutscene_set_time_units(cutscene_time_units_seconds); //can also change units mi
 //etc.
 
 
+//---new cutscene functions---
+cutscene_play()
+cutscene_pause()
+cutscene_unpause()
+cutscene_stop()
+
+
+//---new scene functions---
+scene_stop() //ends cutscene
+scene_branch_pause(branch_name)
+scene_branch_unpause(branch_name)
+
+
 //---templates---
 template1 = cutscene_template_start();
 //do something
