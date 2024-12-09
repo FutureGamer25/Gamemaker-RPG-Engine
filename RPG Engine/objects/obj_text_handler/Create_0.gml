@@ -389,6 +389,24 @@ refresh = function() {
 			var command = commandArray[index];
 			var func = command[$ "refresh"];
 			if is_method(func) func(id, paramArray[index]);
+			else switch (func) {
+				case "br":
+					wrapPos = i + 1;
+					
+					lineWidth[lineCount] = width;
+					lineHeight[lineCount] = height;
+					newlinePos[lineCount] = wrapPos;
+					lineCount ++;
+					
+					textWidth = max(textWidth, width);
+					textHeight += height;
+					
+					//reset line
+					xx = newlineX;
+					width = 0;
+					height = 0;
+					break;
+			}
 			i += 2;
 		} else {
 			wordWidth += string_width(char) * textXScale;

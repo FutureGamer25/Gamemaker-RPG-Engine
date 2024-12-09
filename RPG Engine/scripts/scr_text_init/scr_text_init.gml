@@ -170,6 +170,8 @@ __text_transform_effect(["/shake", "/wave", "/scared"], "reset");
 #endregion
 
 #region random
+__text_refresh_func("br", "br");
+
 __text_type_func("wait", function(inst, param) {
 	inst.wait_seconds(real(param[0]));
 });
