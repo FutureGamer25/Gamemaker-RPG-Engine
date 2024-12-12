@@ -1,4 +1,4 @@
-function room_fade(index, color = c_black, seconds = 0.4) {
+function room_fade(index, color = c_black, seconds = 0.4, out_seconds = seconds) {
 	with obj_room_fade {
 		if fadeIn return noone;
 	}
