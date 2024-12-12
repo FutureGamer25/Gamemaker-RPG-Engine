@@ -4,8 +4,8 @@ cutscene_set_time_units(cutscene_time_units_seconds); //can also change units mi
 //cutscene_time_units_seconds_dt
 
 //affects functions such as...
-//scene_wait(time);
-//scene_obj_move(inst, x, y, time);
+//cs_wait(time);
+//cs_obj_move(inst, x, y, time);
 //etc.
 
 
@@ -17,40 +17,40 @@ cutscene_stop()
 
 
 //---new scene functions---
-scene_stop() //ends cutscene
-scene_branch_pause(branch_name)
-scene_branch_unpause(branch_name)
+cs_stop() //ends cutscene
+cs_branch_pause(branch_name)
+cs_branch_unpause(branch_name)
 
 
 //---templates---
 template1 = cutscene_template_start();
 //do something
-scene_branch_start("branch1");
-	scene_label("loop");
+cs_branch_start("branch1");
+	cs_label("loop");
 	//do something
-	scene_goto("loop");
-scene_branch_end();
-scene_wait(5);
-scene_branch_set_speed("branch1", 2);
-scene_wait(5);
-scene_branch_pause("branch1");
+	cs_goto("loop");
+cs_branch_end();
+cs_wait(5);
+cs_branch_set_speed("branch1", 2);
+cs_wait(5);
+cs_branch_pause("branch1");
 
 
 //---actual cutscenes---
 cutscene_start();
-scene_obj_move_relative(obj_player, 0, 32, 1);
-scene_wait(2);
-scene_template(template1);
-scene_lerp(/*idk stuff here*/);
-scene_anim_start(0);
-scene_anim_pos(5, 1);
-scene_anim_pos(3, 1);
-scene_anim_end();
+cs_obj_move_relative(obj_player, 0, 32, 1);
+cs_wait(2);
+cs_template(template1);
+cs_lerp(/*idk stuff here*/);
+cs_anim_start(0);
+cs_anim_pos(5, 1);
+cs_anim_pos(3, 1);
+cs_anim_end();
 //cutscene runs automatically
 
 
 
-function scene_wait(_time) {
+function cs_wait(_time) {
 	static _wait = function(_time) constructor {
 		_timer = _time;
 		static _step = function(_dt) {
@@ -58,11 +58,11 @@ function scene_wait(_time) {
 			if (_timer <= 0) cutscene_next();
 		}
 	}
-	scene_add_event(_wait, _time);
+	cutscene_add_event(_wait, _time);
 }
 
 //alternate
-function scene_wait(_time) {
+function cs_wait(_time) {
 	static _func = function(_time) {
 		static _wait = function(_time) constructor {
 			_timer = _time;
@@ -73,28 +73,28 @@ function scene_wait(_time) {
 		}
 		cutscene_set_step(new _wait(_time)._step);
 	}
-	scene_call(_func, _time);
+	cs_call(_func, _time);
 }
 
 
-function scene_obj_destroy(_inst) {
+function cs_obj_destroy(_inst) {
 	static _func = function(_inst) {
 		instance_destroy(_inst);
 	}
-	scene_call(_func, _inst);
+	cs_call(_func, _inst);
 }
 
 //alternate
-function scene_obj_destroy(_inst) {
+function cs_obj_destroy(_inst) {
 	static _func = function(_inst) constructor {
 		instance_destroy(_inst);
 	}
-	scene_add_event(_func, _inst);
+	cutscene_add_event(_func, _inst);
 }
 
 
-function scene_lerp(_val1, _val2, _time, _callback) {
-	scene_add_interpolator();
+function cs_lerp(_val1, _val2, _time, _callback) {
+	cs_add_interpolator();
 }
 
 
@@ -120,6 +120,10 @@ function __cutscene_branch_class(_script, _pos = 0) constructor {
 	_callstack = [];
 	_branches = [];
 	
+	static _next = function() {
+		
+	}
+	
 	static _step = function(_spd) {
 		if (_paused) return _has_name; //if nameless can be removed
 		
@@ -140,6 +144,7 @@ function __cutscene_branch_class(_script, _pos = 0) constructor {
 			//}
 			
 			//run event
+			
 		} else {
 			if (array_length(_branches) = 0) return _has_name; //no branches and nameless
 		}
