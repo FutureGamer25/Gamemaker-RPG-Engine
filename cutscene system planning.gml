@@ -153,7 +153,7 @@ function __cutscene_branch_class(_script, _event_index = 0) constructor {
 	
 	_running_event = undefined;
 	_running_get_dt = undefined;
-	_run_next_event = false;
+	_run_next_event = true;
 	_live_script = new __cutscene_script_class();
 	_child_branches = [];
 	
