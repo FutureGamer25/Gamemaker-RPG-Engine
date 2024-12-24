@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"scr_scene_functions",
+  "%Name":"scr_cs_functions",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"scr_scene_functions",
+  "name":"scr_cs_functions",
   "parent":{
     "name":"Cutscenes",
     "path":"folders/RPG Engine/Systems/Animation/Cutscenes.yy",

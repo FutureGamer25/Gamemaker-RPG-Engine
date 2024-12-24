@@ -118,10 +118,10 @@ function __cutscene_method_class(_method, _parameter) constructor {
 	self._parameter = _parameter;
 }
 
-function cutscene_add_event(_event, _parameter) {
+function cutscene_add_event(_constructor, _parameter) {
 	static _global = __cutscene_get_global();
 	if (_global._script_current = undefined) return;
-	_global._script_current._push(new __cutscene_event_class(_event, _parameter, _global._time_units));
+	_global._script_current._push(new __cutscene_constructor_class(_constructor, _parameter, _global._time_units));
 }
 
 
@@ -199,8 +199,12 @@ function __cutscene_branch_class(_script, _event_index = 0) constructor {
 			_event_index ++;
 			
 			if (_event_index >= array_length(_script._events)) {
-				if (_callstack_pop()) continue; //continue on previous script
-				else break; //callstack is empty and the branch has finished
+				if (_callstack_pop()) {
+					continue; //continue on previous script
+				} else {
+					_running_event = undefined;
+					break; //callstack is empty and the branch has finished
+				}
 			}
 			
 			//run event
