@@ -128,7 +128,7 @@ function cutscene_add_event(_constructor, _parameter) {
 //---script/template implementation---
 function __cutscene_script_class() constructor {
 	static _push = function(_event) {
-		array_push(_events, _event)
+		array_push(_events, _event);
 	}
 	_events = [];
 	_labels = {};

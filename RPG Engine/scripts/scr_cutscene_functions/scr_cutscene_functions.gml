@@ -27,6 +27,10 @@ function template_end() {
 	_global._script_stack_pop();
 }
 
+function cutscene_stop() {
+	//a
+}
+
 function cutscene_add_event(_constructor, _parameter = undefined) {
 	static _global = __cutscene_get_global();
 	var _script = _global._script_current;
