@@ -10,16 +10,20 @@ cutscene_set_time_units(cutscene_time_units_seconds); //can also change units mi
 
 
 //---new cutscene functions---
-cutscene_play()
+cutscene_start()
 cutscene_pause()
-cutscene_unpause()
+cutscene_resume()
 cutscene_stop()
+
+cutscene_automatic_step(cutscene, enable)
+cutscene_step()
+cuscene_next()
 
 
 //---new scene functions---
 cs_stop() //ends cutscene
 cs_branch_pause(branch_name)
-cs_branch_unpause(branch_name)
+cs_branch_resume(branch_name)
 
 
 //---templates---
@@ -258,4 +262,39 @@ function __cutscene_get_global() {
 	}
 	static _global = new _class();
 	return _global;
+}
+
+
+
+//BULLCRAP TIME!!!
+//event running
+
+FUNCTION run_events(script)
+	FOR each event in the script
+		get event from the script
+		call event
+		
+		WHILE there is a running event
+			wait a frame
+			run the event step
+		END WHILE
+		
+		IF there is events on the live script
+			run_events(live script)
+		END IF
+	END FOR
+END FUNCTION
+
+function _run_events(_spd) {
+	while
+}
+
+function cutscene_goto(cutscene, label_name) {
+	
+}
+
+//goto the next event
+//if called repeatedly will skip multiple events
+function cutscene_next(cutscene, branch_name = "__current__") {
+
 }
