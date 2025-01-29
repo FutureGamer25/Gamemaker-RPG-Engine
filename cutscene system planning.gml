@@ -153,11 +153,10 @@ function __cutscene_branch_class(_script, _event_index = 0) constructor {
 	
 	_callstack = [];
 	self._script = _script;
-	self._event_index = _event_index - 1;
+	self._event_index = _event_index;
 	
+	_initialize_next_event = true;
 	_running_event = undefined;
-	_running_get_dt = undefined;
-	_run_next_event = true;
 	_live_script = new __cutscene_script_class();
 	_child_branches = [];
 	
@@ -170,7 +169,25 @@ function __cutscene_branch_class(_script, _event_index = 0) constructor {
 		
 		//run events
 		if (_event_index < array_length(_script._events)) {
-			_run_events(_spd);
+			_global._script_stack_push(_live_script);
+			
+			//run step
+			if (_running_event != undefined) {
+				var _time_units = _running_event._time_units;
+				var _dt = _spd;
+				if (_time_units = cutscene_time_units_seconds) {
+					_dt /= game_get_speed(gamespeed_fps);
+				} else if (_time_units = cutscene_time_units_seconds_dt) {
+					_dt *= delta_time / 1_000_000;
+				}
+				
+				_running_event._step(_dt);
+			}
+			
+			//progress to next event
+			_next_event();
+			
+			_global._script_stack_pop();
 		} else {
 			if (array_length(_child_branches) = 0) return !_has_name; //no branches and nameless
 		}
@@ -184,51 +201,38 @@ function __cutscene_branch_class(_script, _event_index = 0) constructor {
 		return false;
 	}
 	
-	static _run_events = function(_spd) {
-		_global._script_stack_push(_live_script);
-		
-		//run step
-		if (_running_event != undefined) _running_event._step(_running_get_dt(_spd));
-		
-		//progress to next event
-		while (_run_next_event) {
+	static _next_event = function() {
+		while (_initialize_next_event) {
 			//check for live defined events
 			if (array_length(_live_script._events) > 0) {
-				_global._script_stack_pop();
 				_callstack_push(_live_script);
+				_global._script_stack_pop();
 				_live_script = new __cutscene_script_class();
 				_global._script_stack_push(_live_script);
 			}
 			
-			_event_index ++;
-			
-			if (_event_index >= array_length(_script._events)) {
-				if (_callstack_pop()) {
-					continue; //continue on previous script
-				} else {
-					_running_event = undefined;
-					break; //callstack is empty and the branch has finished
-				}
+			while (_event_index >= array_length(_script._events)) {
+				var _can_pop = _callstack_pop();
+				if (!_can_pop) return; //callstack is empty
 			}
 			
 			//run event
 			var _event = _script._events[_event_index];
+			
 			if (_event._type = __cutscene_event_type._constructor) {
-				_run_next_event = false;
-				_running_get_dt = _global._time_units_methods[_event._time_units];
+				_initialize_next_event = false;
 				_running_event = new _event._constructor(_event._parameter);
 			} else {
+				_event_index ++;
 				_event._method(_event._parameter);
 			}
 		}
-		
-		_global._script_stack_pop();
 	}
 	
 	static _callstack_push = function(_script, _event_index = 0) {
 		array_push(_callstack, {_script: self._script, _event_index: self._event_index});
 		self._script = _script;
-		self._event_index = _event_index - 1;
+		self._event_index = _event_index;
 	}
 	
 	static _callstack_pop = function() {
@@ -254,11 +258,6 @@ function __cutscene_get_global() {
 		_script_stack = [];
 		_script_current = undefined;
 		_time_units = cutscene_time_units_frames;
-		
-		_time_units_methods = [];
-		_time_units_methods[cutscene_time_units_frames] = function(_spd) { return _spd; };
-		_time_units_methods[cutscene_time_units_seconds] = function(_spd) { return _spd / game_get_speed(gamespeed_fps); };
-		_time_units_methods[cutscene_time_units_seconds_dt] = function(_spd) { return _spd * delta_time / 1_000_000; };
 	}
 	static _global = new _class();
 	return _global;
@@ -270,7 +269,7 @@ function __cutscene_get_global() {
 //event running
 
 FUNCTION run_events(script)
-	FOR each event in the script
+	WHILE there's still events to run
 		get event from the script
 		call event
 		
@@ -282,19 +281,19 @@ FUNCTION run_events(script)
 		IF there is events on the live script
 			run_events(live script)
 		END IF
-	END FOR
+		
+		_event_index ++;
+	END WHILE
 END FUNCTION
 
-function _run_events(_spd) {
-	while
-}
-
 function cutscene_goto(cutscene, label_name) {
-	
+	_initialize_next_event = true;
+	_event_index = (idk get the index from the label);
 }
 
 //goto the next event
 //if called repeatedly will skip multiple events
 function cutscene_next(cutscene, branch_name = "__current__") {
-
+	_initialize_next_event = true;
+	_event_index ++;
 }
