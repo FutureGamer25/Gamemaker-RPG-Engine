@@ -125,22 +125,30 @@ function __cutscene_method_class(_method, _parameter) constructor {
 function __cutscene_class(_script) constructor {
 	_main_branch = new __cutscene_branch_class(self, _script);
 	_current_branch = _main_branch;
+	_is_active = false;
 	_time_source = undefined;
 	_branch_names = {};
 	
 	static _global = __cutscene_get_global();
 	
 	static _start = function() {
+		_activate();
+		_main_branch._start();
+	}
+	
+	static _activate = function() {
+		_is_active = true;
 		if (!time_source_exists(_time_source)) {
 			_time_source = time_source_create(time_source_game, 1, time_source_units_frames, _step, [], -1);
 		}
 	}
 	
 	static _stop = function() {
-		_main_branch.a()
+		_main_branch._stop();
 	}
 	
 	static _set_paused = function(_paused) {
+		_activate();
 		_main_branch._paused = _paused;
 	}
 	
@@ -149,16 +157,16 @@ function __cutscene_class(_script) constructor {
 	}
 	
 	static _next = function(_branch_name) {
+		_activate();
 		_get_branch(_branch_name)._next();
 	}
 	
 	_step = function() {
+		_is_active = false;
 		_global._cutscene_stack_push(self);
-		var _ended = _main_branch._step(1);
-		//TODO: currently the timesource cannot destroy if there are any named branches
-		//must be fixed or else the timesource will run forever for some cutscenes
-		if (_ended) time_source_destroy(_time_source);
+		_main_branch._step(1);
 		_global._cutscene_stack_pop();
+		if (!_is_active) time_source_destroy(_time_source);
 	}
 	
 	static _get_branch = function(_branch_name) {
@@ -195,8 +203,8 @@ function __cutscene_branch_class(_cutscene, _script, _event_index = 0) construct
 	static _global = __cutscene_get_global();
 	
 	static _start = function() {
-		_callstack_top._event_index = -1;
 		_initialize_next_event = true;
+		_callstack_top._event_index = 0;
 		_running_event = undefined;
 	}
 	
@@ -230,8 +238,16 @@ function __cutscene_branch_class(_cutscene, _script, _event_index = 0) construct
 		return false;
 	}
 	
+	static _is_removable = function() {
+		if (_has_name) return false; //if it has a name it can still be referenced
+		if (_paused) return true; //if paused neither it nor child branches can run
+		//no event, no children, no maidens, and nameless
+		return (_running_event = undefined && array_length(_child_branches) = 0);
+	}
+	
+	//_step also returns whether the branch is active
 	static _step = function(_spd) {
-		if (_paused) return !_has_name; //can be removed if nameless
+		if (_paused) return false;
 		
 		_spd *= _speed;
 		
@@ -247,25 +263,22 @@ function __cutscene_branch_class(_cutscene, _script, _event_index = 0) construct
 			} else if (_time_units = cutscene_time_units_seconds_dt) {
 				_dt *= delta_time / 1_000_000;
 			}
-			
 			_running_event._step(_dt);
-		} else {
-			//no initialization, no children, no maidens, and nameless
-			if (!_initialize_next_event && array_length(_child_branches) = 0) return !_has_name;
 		}
 		
 		//progress to next event
-		_next_event();
+		if (_initialize_next_event) _next_event();
 		
 		_global._script_stack_pop();
 		
+		if (_running_event != undefined) _cutscene._is_active = true;
+		
 		//run child branches
 		for (var _i = array_length(_child_branches) - 1; _i >= 0; _i--) {
-			var _removable = _child_branches[_i]._step(_spd);
-			if (_removable) array_delete(_child_branches, _i, 1);
+			var _branch = _child_branches[_i];
+			_branch._step(_spd);
+			if (_branch._is_removable()) array_delete(_child_branches, _i, 1);
 		}
-		
-		return false;
 	}
 	
 	static _next_event = function() {
