@@ -11,9 +11,9 @@ cutscene_set_time_units(cutscene_time_units_seconds); //can also change units mi
 
 //---new cutscene functions---
 cutscene_start()
+cutscene_stop()
 cutscene_pause()
 cutscene_resume()
-cutscene_stop()
 
 cutscene_automatic_step(cutscene, enable)
 cutscene_step()
@@ -21,15 +21,18 @@ cuscene_next()
 
 
 //---new scene functions---
-cs_stop() //ends cutscene
+cs_stop()
+//stops current and child branches
 cs_branch_pause(branch_name)
 cs_branch_resume(branch_name)
+cs_branch_stop(branch_name)
+//stops all branches
 
 
 //---templates---
 template1 = cutscene_template_begin();
 //do something
-cs_branch_start("branch1");
+cs_branch_begin("branch1");
 	cs_label("loop");
 	//do something
 	cs_goto("loop");
