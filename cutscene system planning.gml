@@ -10,23 +10,34 @@ cutscene_set_time_units(cutscene_time_units_seconds); //can also change units mi
 
 
 //---new cutscene functions---
-cutscene_start()
-cutscene_stop()
-cutscene_pause()
-cutscene_resume()
+cutscene_get_current()
+cutscene_start([cutscene])
+cutscene_stop([cutscene])
+cutscene_pause([cutscene])
+cutscene_resume([cutscene])
+
+cutscene_begin()
+cutscene_end()
+cutscene_template_begin()
+cutscene_template_end()
+cutscene_start_template(template)
 
 cutscene_automatic_step(cutscene, enable)
-cutscene_step()
-cuscene_next()
+cutscene_step(cutscene)
+cuscene_next([cutscene])
 
 
 //---new scene functions---
 cs_stop()
-//stops current and child branches
+//stops current branch
 cs_branch_pause(branch_name)
 cs_branch_resume(branch_name)
 cs_branch_stop(branch_name)
-//stops all branches
+
+cs_branch_begin([name])
+cs_branch_end()
+cs_branch_container_begin([default_branch_name])
+cs_branch_container_end()
 
 
 //---templates---
@@ -43,6 +54,8 @@ cs_wait(5);
 cs_branch_pause("branch1");
 cutscene_template_end();
 
+cutscene_start_template(template1);
+
 
 //---actual cutscenes---
 cutscene_begin();
@@ -50,7 +63,7 @@ cs_obj_move_relative(obj_player, 0, 32, 1);
 cs_wait(2);
 cs_template(template1);
 cs_lerp(/*idk stuff here*/);
-cs_anim_start(0);
+cs_anim_begin(0);
 cs_anim_pos(5, 1);
 cs_anim_pos(3, 1);
 cs_anim_end();
