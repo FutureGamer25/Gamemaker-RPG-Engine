@@ -20,15 +20,20 @@ cutscene_begin()
 cutscene_end()
 cutscene_template_begin()
 cutscene_template_end()
-cutscene_start_template(template)
+cutscene_from_template(template)
 
 cutscene_automatic_step(cutscene, enable)
 cutscene_step(cutscene)
-cuscene_next([cutscene])
+cutscene_next([cutscene])
+
+
+//---macros---
+cutscene_branch_main
+cutscene_branch_current
 
 
 //---new scene functions---
-cs_stop()
+cs_end()
 //stops current branch
 cs_branch_pause(branch_name)
 cs_branch_resume(branch_name)
@@ -36,8 +41,49 @@ cs_branch_stop(branch_name)
 
 cs_branch_begin([name])
 cs_branch_end()
-cs_branch_container_begin([default_branch_name])
-cs_branch_container_end()
+cs_branch_from_template(template)
+cs_branch_layer_begin([main_branch_name])
+cs_branch_layer_end()
+
+
+//branch example
+cutscene_begin();
+cs_do_thing();
+cs_do_thing();
+
+cs_branch_layer_begin();
+	cs_branch_begin();
+		cs_char_walk(obj_jimmy, 50, 30, 5);
+		cs_branch_begin("dust");
+			cs_spawn_dust(obj_jimmy, 8, 16);
+		cs_branch_end();
+	cs_branch_end();
+	cs_char_walk(obj_james, 100, 30, 5);
+cs_branch_layer_end();
+
+cs_do_last_thing();
+cutscene_end();
+
+
+//branch example 2
+cutscene_begin();
+cs_do_thing();
+cs_do_thing();
+
+cs_branch_begin("jimmy");
+	cs_char_walk(obj_jimmy, 50, 30, 5);
+	cs_branch_begin("dust");
+		cs_spawn_dust(obj_jimmy, 8, 16);
+	cs_branch_end();
+cs_branch_end();
+
+cs_branch_begin("james");
+	cs_char_walk(obj_james, 100, 30, 5);
+cs_branch_end();
+cs_await_branches(["jimmy", "james", "dust"])
+
+cs_do_last_thing();
+cutscene_end();
 
 
 //---templates---
@@ -156,30 +202,46 @@ function __cutscene_script_class() constructor {
 
 
 //---cutscene implementation---
-function __cutscene_class() constructor {
+function __cutscene_class(_script) constructor {
+	self._script = _script;
+	_branches = [];
 	_branch_names = {};
+	_time_unit_scalers = [1, 1, 1];
+	
+	_step = function() {
+		_time_unit_scalers[cutscene_time_units_seconds] = 1 / game_get_speed(gamespeed_fps);
+		_time_unit_scalers[cutscene_time_units_seconds_dt] = delta_time / 1_000_000;
+		
+		for (var _i = array_length(_branches) - 1; _i >= 0; _i--) {
+			_branches[_i]._step(1, _time_unit_scalers);
+		}
+		
+		for (var _i = array_length(_branches) - 1; _i >= 0; _i--) {
+			if (_branches[_i]._stopped) array_delete(_branches, _i);
+		}
+	}
 }
 
 
 //---branch implementation---
-function __cutscene_branch_class(_script, _event_index = 0) constructor {
+function __cutscene_branch_class(_script, _name = "") constructor {
 	_paused = false;
 	_speed = 1;
-	_has_name = false; //is referenced in _branch_names
+	self._name = _name;
 	
-	_callstack = [];
 	self._script = _script;
-	self._event_index = _event_index;
+	self._event_index = 0;
+	_callstack = [];
 	
-	_initialize_next_event = true;
+	_initialize_event = true;
 	_running_event = undefined;
 	_live_script = new __cutscene_script_class();
 	_child_branches = [];
 	
 	static _global = __cutscene_get_global();
 	
-	static _step = function(_spd) {
-		if (_paused) return !_has_name; //if nameless can be removed
+	static _step = function(_spd, _time_unit_scalers) {
+		if (_paused) return;
 		
 		_spd *= _speed;
 		
@@ -189,36 +251,37 @@ function __cutscene_branch_class(_script, _event_index = 0) constructor {
 			
 			//run step
 			if (_running_event != undefined) {
-				var _time_units = _running_event._time_units;
-				var _dt = _spd;
-				if (_time_units = cutscene_time_units_seconds) {
-					_dt /= game_get_speed(gamespeed_fps);
-				} else if (_time_units = cutscene_time_units_seconds_dt) {
-					_dt *= delta_time / 1_000_000;
-				}
+				//#region get delta time
+				//var _time_units = _running_event._time_units;
+				//var _dt = _spd;
+				//if (_time_units = cutscene_time_units_seconds) {
+				//	_dt /= game_get_speed(gamespeed_fps);
+				//} else if (_time_units = cutscene_time_units_seconds_dt) {
+				//	_dt *= delta_time / 1_000_000;
+				//}
+				//
+				//switch (_running_event._time_units) {
+				//	case cutscene_time_units_frames: _dt = _spd; break;
+				//	case cutscene_time_units_seconds: _dt = _spd / game_get_speed(gamespeed_fps); break;
+				//	case cutscene_time_units_seconds_dt: _dt = _spd * delta_time / 1_000_000; break;
+				//}
+				//#endregion
 				
-				_running_event._step(_dt);
+				_running_event._step(_spd * _time_unit_scalers[_running_event._time_units]);
 			}
 			
 			//progress to next event
-			_next_event();
+			if (_initialize_event) {
+				_init_event();
+			}
 			
 			_global._script_stack_pop();
-		} else {
-			if (array_length(_child_branches) = 0) return !_has_name; //no branches and nameless
 		}
-		
-		//run child branches
-		for (var i=array_length(_child_branches)-1; i>=0; i--) {
-			var _remove = _child_branches[i]._step(_spd);
-			if (_remove) array_delete(_child_branches, i, 1);
-		}
-		
-		return false;
 	}
 	
-	static _next_event = function() {
-		while (_initialize_next_event) {
+	static _init_event = function() {
+		_initialize_event = true;
+		do {
 			//check for live defined events
 			if (array_length(_live_script._events) > 0) {
 				_callstack_push(_live_script);
@@ -228,21 +291,21 @@ function __cutscene_branch_class(_script, _event_index = 0) constructor {
 			}
 			
 			while (_event_index >= array_length(_script._events)) {
-				var _can_pop = _callstack_pop();
-				if (!_can_pop) return; //callstack is empty
+				var _success = _callstack_pop();
+				if (!_success) return; //callstack is empty
 			}
 			
 			//run event
 			var _event = _script._events[_event_index];
 			
 			if (_event._type = __cutscene_event_type._constructor) {
-				_initialize_next_event = false;
+				_initialize_event = false;
 				_running_event = new _event._constructor(_event._parameter);
 			} else {
-				_event_index ++;
+				_event_index++;
 				_event._method(_event._parameter);
 			}
-		}
+		} until (!_initialize_event)
 	}
 	
 	static _callstack_push = function(_script, _event_index = 0) {
@@ -283,7 +346,6 @@ function __cutscene_get_global() {
 
 //BULLCRAP TIME!!!
 //event running
-
 FUNCTION run_events(script)
 	WHILE there's still events to run
 		get event from the script
@@ -302,14 +364,21 @@ FUNCTION run_events(script)
 	END WHILE
 END FUNCTION
 
+
+run current step
+if (next event) {
+	
+}
+
+
 function cutscene_goto(cutscene, label_name) {
-	_initialize_next_event = true;
+	_initialize_event = true;
 	_event_index = (idk get the index from the label);
 }
 
 //goto the next event
 //if called repeatedly will skip multiple events
 function cutscene_next(cutscene, branch_name = "__current__") {
-	_initialize_next_event = true;
+	_initialize_event = true;
 	_event_index ++;
 }
