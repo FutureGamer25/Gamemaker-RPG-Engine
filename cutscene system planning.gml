@@ -204,31 +204,44 @@ function __cutscene_script_class() constructor {
 //---cutscene implementation---
 function __cutscene_class(_script) constructor {
 	self._script = _script;
-	_branches = [];
+	_branch_count = 0;
 	_branch_names = {};
+	_branch_queue = [];
 	_time_unit_scalers = [1, 1, 1];
 	
 	_step = function() {
 		_time_unit_scalers[cutscene_time_units_seconds] = 1 / game_get_speed(gamespeed_fps);
 		_time_unit_scalers[cutscene_time_units_seconds_dt] = delta_time / 1_000_000;
 		
-		for (var _i = array_length(_branches) - 1; _i >= 0; _i--) {
-			_branches[_i]._step(1, _time_unit_scalers);
+		for (var _i = array_length(_branch_queue) - 1; _i >= 0; _i--) {
+			var _ended = _branch_queue[_i]._step(1, _time_unit_scalers);
+			if (ended) _branch_remove(_branch);
+			if (_branch._removed) array_delete(_branch_queue, _i);
 		}
-		
-		for (var _i = array_length(_branches) - 1; _i >= 0; _i--) {
-			if (_branches[_i]._stopped) array_delete(_branches, _i);
-		}
+	}
+	
+	_branch_add(_branch) = function {
+		_branch_count++;
+		_branch_names[$ _branch._name] = _branch;
+		array_push(_branch_queue, _branch);
+	}
+	
+	_branch_remove(_branch) = function {
+		if (_branch._destroyed) return;
+		_branch._destroyed = true;
+		_branch_count--;
+		struct_remove(_branch_names, _branch._name);
 	}
 }
 
 
 //---branch implementation---
 function __cutscene_branch_class(_script, _name = "") constructor {
+	self._name = _name; //used by __cutscene_class
+	_removed = false; //used by __cutscene_class
+	
 	_paused = false;
 	_speed = 1;
-	self._name = _name;
-	
 	self._script = _script;
 	self._event_index = 0;
 	_callstack = [];
@@ -241,7 +254,7 @@ function __cutscene_branch_class(_script, _name = "") constructor {
 	static _global = __cutscene_get_global();
 	
 	static _step = function(_spd, _time_unit_scalers) {
-		if (_paused) return;
+		if (_paused) return false;
 		
 		_spd *= _speed;
 		
@@ -260,6 +273,7 @@ function __cutscene_branch_class(_script, _name = "") constructor {
 				//	_dt *= delta_time / 1_000_000;
 				//}
 				//
+				//var _dt;
 				//switch (_running_event._time_units) {
 				//	case cutscene_time_units_frames: _dt = _spd; break;
 				//	case cutscene_time_units_seconds: _dt = _spd / game_get_speed(gamespeed_fps); break;
