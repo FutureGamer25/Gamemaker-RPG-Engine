@@ -9,7 +9,7 @@
   "bitRate":128,
   "compression":0,
   "conversionMode":0,
-  "duration":0.114172,
+  "duration":0.11417233,
   "name":"snd_dialog_sans",
   "parent":{
     "name":"Sounds",
