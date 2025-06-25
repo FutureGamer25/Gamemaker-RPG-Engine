@@ -206,24 +206,27 @@ function __cutscene_class(_script) constructor {
 	self._script = _script;
 	_branch_count = 0;
 	_branch_names = {};
-	_branch_queue = [];
+	_branches = [];
 	_time_unit_scalers = [1, 1, 1];
 	
 	_step = function() {
 		_time_unit_scalers[cutscene_time_units_seconds] = 1 / game_get_speed(gamespeed_fps);
 		_time_unit_scalers[cutscene_time_units_seconds_dt] = delta_time / 1_000_000;
 		
-		for (var _i = array_length(_branch_queue) - 1; _i >= 0; _i--) {
-			var _ended = _branch_queue[_i]._step(1, _time_unit_scalers);
+		for (var _i = array_length(_branches) - 1; _i >= 0; _i--) {
+			var _ended = _branches[_i]._step(1, _time_unit_scalers);
 			if (ended) _branch_remove(_branch);
-			if (_branch._removed) array_delete(_branch_queue, _i);
+		}
+		
+		for (var _i = array_length(_branches) - 1; _i >= 0; _i--) {
+			if (_branch._removed) array_delete(_branches, _i);
 		}
 	}
 	
 	_branch_add(_branch) = function {
 		_branch_count++;
 		_branch_names[$ _branch._name] = _branch;
-		array_push(_branch_queue, _branch);
+		array_push(_branches, _branch);
 	}
 	
 	_branch_remove(_branch) = function {
