@@ -1,9 +1,8 @@
 #region cutscene testing
 
-//init cutscene
-scene = cutscene_create();
-
 //define cutscene
+cutscene = cutscene_begin();
+
 scene_func(function() {
 	asd = instance_create_depth(0, 0, 0, obj_ice_cream_man);
 });
@@ -39,8 +38,7 @@ scene_wait(10);
 
 scene_goto("label");
 
-//start cutscene
-cutscene_start();
+cutscene_end();
 
 #endregion
 

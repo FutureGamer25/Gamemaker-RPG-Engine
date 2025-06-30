@@ -71,6 +71,11 @@ function cutscene_add_method(_method, _parameter = undefined) {
 #macro cutscene_time_units_seconds 1
 #macro cutscene_time_units_seconds_dt 2
 
+#macro cutscene_state_initial 0
+#macro cutscene_state_active 1
+#macro cutscene_state_paused 2
+#macro cutscene_state_stopped 3
+
 function __cutscene_get_global() {
 	static _class = function() constructor {
 		_script_stack_push = function(_script) {
@@ -122,34 +127,50 @@ function __cutscene_method_class(_method, _parameter) constructor {
 }
 #endregion
 
-function __cutscene_class(_script) constructor {
-	_main_branch = new __cutscene_branch_class(self, _script);
-	_current_branch = _main_branch;
-	_is_active = false;
+function __cutscene_class(_script, _branch_name_struct = {}) constructor {
+	_automatic_step = true;
+	self._script = _script;
+	_branch_names = _branch_name_struct;
+	_branches = [undefined];
+	_active_branch_count = 0;
+	_current_branch = undefined;
 	_time_source = undefined;
-	_branch_names = {};
+	_state = cutscene_state_initial;
 	
 	static _global = __cutscene_get_global();
 	
-	static _start = function() {
-		_activate();
-		_main_branch._start();
+	static _enable_time_source = function() {
+		if (!_automatic_step || time_source_exists(_time_source)) return;
+		var _callback = function() {
+			var _stopped = _step();
+			if (_stopped) time_source_destroy(_time_source);
+		}
+		_time_source = time_source_create(time_source_game, 1, time_source_units_frames, _callback, [], -1);
 	}
 	
-	static _activate = function() {
-		_is_active = true;
-		if (!time_source_exists(_time_source)) {
-			_time_source = time_source_create(time_source_game, 1, time_source_units_frames, _step, [], -1);
-		}
+	static _start = function() {
+		_state = cutscene_state_active;
+		array_resize(_branches, 1);
+		_branches[0] = new __cutscene_branch_class(self, _script);
+		_active_branch_count = 1;
+		_enable_time_source();
 	}
 	
 	static _stop = function() {
-		_main_branch._stop();
+		_state = cutscene_state_stopped;
+		time_source_destroy(_time_source);
 	}
 	
-	static _set_paused = function(_paused) {
-		_activate();
-		_main_branch._paused = _paused;
+	static _pause = function() {
+		if (_state != cutscene_state_active) return;
+		_state = cutscene_state_paused;
+		time_source_destroy(_time_source);
+	}
+	
+	static _unpause = function() {
+		if (_state != cutscene_state_paused) return;
+		_state = cutscene_state_active;
+		_enable_time_source();
 	}
 	
 	static _set_speed = function(_speed) {
@@ -161,12 +182,26 @@ function __cutscene_class(_script) constructor {
 		_get_branch(_branch_name)._next();
 	}
 	
-	_step = function() {
-		_is_active = false;
+	static _step = function() {
+		if (_state != cutscene_state_active) return (_state = cutscene_state_stopped);
+		
 		_global._cutscene_stack_push(self);
-		_main_branch._step(1);
+		for (var _i = array_length(_branches) - 1; _i >= 0; _i--) {
+			var _branch = _branches[_i];
+			if (!_branch._active) { //clean up inactive branches
+				array_delete(_branches, _i);
+				continue;
+			}
+			
+			var _ended = _branch._step(1);
+			if (_ended) {
+				_branch_remove(_branch);
+			}
+		}
 		_global._cutscene_stack_pop();
-		if (!_is_active) time_source_destroy(_time_source);
+		
+		if (_active_branch_count <= 0) _state = cutscene_state_stopped;
+		return (_state = cutscene_state_stopped);
 	}
 	
 	static _get_branch = function(_branch_name) {
@@ -175,6 +210,27 @@ function __cutscene_class(_script) constructor {
 		}
 		return _branch_names[$ _branch_name];
 	}
+	
+	static _branch_add(_branch, _name = "") = function {
+		//if (_branch._active) return; //not needed atm
+		_branch._active = true;
+		_active_branch_count++;
+		array_push(_branches, _branch);
+		if (_name != "" && _branch_names[$ _name] = undefined) {
+			_branch_names[$ _name] = _branch;
+			_branch._name = _name;
+		}
+	}
+	
+	static _branch_remove(_branch) = function {
+		//if (!_branch._active) return; //not needed atm
+		_branch._active = false;
+		_active_branch_count--;
+		if (_branch._name != "") {
+			struct_remove(_branch_names, _branch._name);
+			_branch._name = "";
+		}
+	}
 }
 
 function __cutscene_script_class() constructor {
@@ -182,45 +238,46 @@ function __cutscene_script_class() constructor {
 	_labels = {};
 }
 
-function __cutscene_branch_class(_cutscene, _script, _event_index = 0) constructor {
-	self._cutscene = _cutscene;
+function __cutscene_branch_class(_cutscene, _script) constructor {
+	_name = ""; //used by __cutscene_class
+	_active = false; //used by __cutscene_class
+	
+	_ended = false;
 	_paused = false;
 	_speed = 1;
-	_has_name = false; //is referenced in _branch_names
 	
 	_callstack_top = {
-		_event_index: _event_index,
+		_event_index: 0,
 		_events: _script._events,
 		_labels: _script._labels,
 	};
 	_callstack = [_callstack_top];
 	
-	_initialize_next_event = true;
+	_initialize_event = true;
 	_running_event = undefined;
 	_live_script = new __cutscene_script_class();
-	_child_branches = [];
 	
 	static _global = __cutscene_get_global();
 	
-	static _start = function() {
-		_initialize_next_event = true;
-		_callstack_top._event_index = 0;
-		_running_event = undefined;
-	}
-	
-	static _stop = function() {
-		_callstack_top._event_index = array_length(_callstack_top._events);
-	}
+	//static _start = function() {
+	//	_initialize_event = true;
+	//	_callstack_top._event_index = 0;
+	//	_running_event = undefined;
+	//}
+	//
+	//static _stop = function() {
+	//	_callstack_top._event_index = array_length(_callstack_top._events);
+	//}
 	
 	static _next = function() {
-		_initialize_next_event = true;
+		_initialize_event = true;
 		_callstack_top._event_index++;
 	}
 	
 	static _goto = function(_label_name) {
 		var _index = _callstack_top._labels[$ _label_name];
 		if (_index != undefined) {
-			_initialize_next_event = true;
+			_initialize_event = true;
 			_callstack_top._event_index = _index;
 			return true;
 		}
@@ -229,7 +286,7 @@ function __cutscene_branch_class(_cutscene, _script, _event_index = 0) construct
 			var _index = _callstack[_i]._labels[$ _label_name];
 			if (_index != undefined) {
 				_callstack_return_to_index(_i);
-				_initialize_next_event = true;
+				_initialize_event = true;
 				_callstack_top._event_index = _index;
 				return true;
 			}
@@ -238,51 +295,40 @@ function __cutscene_branch_class(_cutscene, _script, _event_index = 0) construct
 		return false;
 	}
 	
-	static _is_removable = function() {
-		if (_has_name) return false; //if it has a name it can still be referenced
-		if (_paused) return true; //if paused neither it nor child branches can run
-		//no event, no children, no maidens, and nameless
-		return (_running_event = undefined && array_length(_child_branches) = 0);
-	}
-	
-	//_step also returns whether the branch is active
+	//_step also returns if the branch has ended
 	static _step = function(_spd) {
-		if (_paused) return false;
+		if (_ended || _paused) return _ended;
 		
 		_spd *= _speed;
 		
-		_cutscene._current_branch = self;
 		_global._script_stack_push(_live_script);
 		
 		//run step
 		if (_running_event != undefined) {
-			var _time_units = _running_event._time_units;
-			var _dt = _spd;
-			if (_time_units = cutscene_time_units_seconds) {
-				_dt /= game_get_speed(gamespeed_fps);
-			} else if (_time_units = cutscene_time_units_seconds_dt) {
-				_dt *= delta_time / 1_000_000;
+			#region get delta time
+			var _dt;
+			switch (_running_event._time_units) {
+				case cutscene_time_units_frames: _dt = _spd; break;
+				case cutscene_time_units_seconds: _dt = _spd / game_get_speed(gamespeed_fps); break;
+				case cutscene_time_units_seconds_dt: _dt = _spd * delta_time / 1_000_000; break;
 			}
+			#endregion
+			
 			_running_event._step(_dt);
 		}
 		
-		//progress to next event
-		if (_initialize_next_event) _next_event();
+		//run next event
+		if (_initialize_event) _init_event();
 		
 		_global._script_stack_pop();
 		
-		if (_running_event != undefined) _cutscene._is_active = true;
-		
-		//run child branches
-		for (var _i = array_length(_child_branches) - 1; _i >= 0; _i--) {
-			var _branch = _child_branches[_i];
-			_branch._step(_spd);
-			if (_branch._is_removable()) array_delete(_child_branches, _i, 1);
-		}
+		return _ended;
 	}
 	
-	static _next_event = function() {
-		while (_initialize_next_event) {
+	static _init_event = function() {
+		_initialize_event = true;
+		_running_event = undefined;
+		do {
 			//check for live defined events
 			if (array_length(_live_script._events) > 0) {
 				_callstack_push(_live_script);
@@ -292,10 +338,9 @@ function __cutscene_branch_class(_cutscene, _script, _event_index = 0) construct
 			}
 			
 			while (_callstack_top._event_index >= array_length(_callstack_top._events)) {
-				var _can_pop = _callstack_pop();
-				if (!_can_pop) { //callstack is empty
-					_initialize_next_event = false;
-					_running_event = undefined;
+				var _popped = _callstack_pop();
+				if (!_popped) { //callstack is empty
+					_ended = true;
 					return;
 				}
 			}
@@ -304,13 +349,13 @@ function __cutscene_branch_class(_cutscene, _script, _event_index = 0) construct
 			var _event = _callstack_top._events[_callstack_top._event_index];
 			
 			if (_event._type = __cutscene_event_type._constructor) {
-				_initialize_next_event = false;
+				_initialize_event = false;
 				_running_event = new _event._constructor(_event._parameter);
 			} else {
 				_callstack_top._event_index++;
 				_event._method(_event._parameter);
 			}
-		}
+		} until (!_initialize_event)
 	}
 	
 	#region callstack
