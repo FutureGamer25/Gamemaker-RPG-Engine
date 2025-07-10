@@ -132,7 +132,7 @@ function __cutscene_class(_script, _branch_name_struct = {}) constructor {
 	self._script = _script;
 	_branch_names = _branch_name_struct;
 	_branches = [undefined];
-	_active_branch_count = 0;
+	_branch_count = 0;
 	_current_branch = undefined;
 	_time_source = undefined;
 	_state = cutscene_state_initial;
@@ -152,7 +152,7 @@ function __cutscene_class(_script, _branch_name_struct = {}) constructor {
 		_state = cutscene_state_active;
 		array_resize(_branches, 1);
 		_branches[0] = new __cutscene_branch_class(self, _script);
-		_active_branch_count = 1;
+		_branch_count = 1;
 		_enable_time_source();
 	}
 	
@@ -188,7 +188,7 @@ function __cutscene_class(_script, _branch_name_struct = {}) constructor {
 		_global._cutscene_stack_push(self);
 		for (var _i = array_length(_branches) - 1; _i >= 0; _i--) {
 			var _branch = _branches[_i];
-			if (!_branch._active) { //clean up inactive branches
+			if (_branch = undefined) { //clean up branches
 				array_delete(_branches, _i);
 				continue;
 			}
@@ -200,7 +200,7 @@ function __cutscene_class(_script, _branch_name_struct = {}) constructor {
 		}
 		_global._cutscene_stack_pop();
 		
-		if (_active_branch_count <= 0) _state = cutscene_state_stopped;
+		if (_branch_count <= 0) _state = cutscene_state_stopped;
 		return (_state = cutscene_state_stopped);
 	}
 	
@@ -212,9 +212,7 @@ function __cutscene_class(_script, _branch_name_struct = {}) constructor {
 	}
 	
 	static _branch_add(_branch, _name = "") = function {
-		//if (_branch._active) return; //not needed atm
-		_branch._active = true;
-		_active_branch_count++;
+		_branch_count++;
 		array_push(_branches, _branch);
 		if (_name != "" && _branch_names[$ _name] = undefined) {
 			_branch_names[$ _name] = _branch;
@@ -223,9 +221,9 @@ function __cutscene_class(_script, _branch_name_struct = {}) constructor {
 	}
 	
 	static _branch_remove(_branch) = function {
-		//if (!_branch._active) return; //not needed atm
-		_branch._active = false;
-		_active_branch_count--;
+		var _index = array_get_index(_branches, _branch);
+		_branches[_index] = undefined;
+		_branch_count--;
 		if (_branch._name != "") {
 			struct_remove(_branch_names, _branch._name);
 			_branch._name = "";
@@ -240,10 +238,8 @@ function __cutscene_script_class() constructor {
 
 function __cutscene_branch_class(_cutscene, _script) constructor {
 	_name = ""; //used by __cutscene_class
-	_active = false; //used by __cutscene_class
 	
-	_ended = false;
-	_paused = false;
+	_state = cutscene_state_initial;
 	_speed = 1;
 	
 	_callstack_top = {
@@ -297,7 +293,7 @@ function __cutscene_branch_class(_cutscene, _script) constructor {
 	
 	//_step also returns if the branch has ended
 	static _step = function(_spd) {
-		if (_ended || _paused) return _ended;
+		if (_state != cutscene_state_active) return (_state = cutscene_state_stopped);
 		
 		_spd *= _speed;
 		
@@ -322,7 +318,7 @@ function __cutscene_branch_class(_cutscene, _script) constructor {
 		
 		_global._script_stack_pop();
 		
-		return _ended;
+		return (_state = cutscene_state_stopped);
 	}
 	
 	static _init_event = function() {
@@ -340,7 +336,7 @@ function __cutscene_branch_class(_cutscene, _script) constructor {
 			while (_callstack_top._event_index >= array_length(_callstack_top._events)) {
 				var _popped = _callstack_pop();
 				if (!_popped) { //callstack is empty
-					_ended = true;
+					_state = cutscene_state_stopped;
 					return;
 				}
 			}
