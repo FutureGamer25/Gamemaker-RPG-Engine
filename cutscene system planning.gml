@@ -36,17 +36,30 @@ cutscene_branch_current
 
 
 //---new scene functions---
-cs_end()
-//stops current branch
+cs_stop() //stops current branch
 cs_branch_pause(branch_name)
 cs_branch_resume(branch_name)
 cs_branch_stop(branch_name)
 
-cs_branch_begin([name])
+cs_branch_begin([name]) //parent is always the main branch
+cs_branch_begin_child(parent_branch, [name])
 cs_branch_end()
 cs_branch_from_template(template)
 cs_branch_layer_begin([main_branch_name])
 cs_branch_layer_end()
+
+
+
+cutscene_begin();
+
+cs_branch_begin();
+	cs_obj_move(obj_friend, 0, 50, 5);
+cs_branch_end();
+
+cs_obj_move(obj_player, 0, 50, 5);
+cs_obj_move(obj_player, 50, 50, 5);
+cutscene_end();
+
 
 
 //branch example

@@ -189,7 +189,7 @@ function __cutscene_class(_script, _branch_name_struct = {}) constructor {
 		for (var _i = array_length(_branches) - 1; _i >= 0; _i--) {
 			var _branch = _branches[_i];
 			if (_branch = undefined) { //clean up branches
-				array_delete(_branches, _i);
+				array_delete(_branches, _i, 1);
 				continue;
 			}
 			
@@ -252,6 +252,7 @@ function __cutscene_branch_class(_cutscene, _script) constructor {
 	_initialize_event = true;
 	_running_event = undefined;
 	_live_script = new __cutscene_script_class();
+	_child_branches = [];
 	
 	static _global = __cutscene_get_global();
 	
@@ -264,38 +265,45 @@ function __cutscene_branch_class(_cutscene, _script) constructor {
 	//static _stop = function() {
 	//	_callstack_top._event_index = array_length(_callstack_top._events);
 	//}
-	
-	static _next = function() {
-		_initialize_event = true;
-		_callstack_top._event_index++;
-	}
-	
-	static _goto = function(_label_name) {
-		var _index = _callstack_top._labels[$ _label_name];
-		if (_index != undefined) {
-			_initialize_event = true;
-			_callstack_top._event_index = _index;
-			return true;
-		}
-		
-		for (var _i = array_length(_callstack) - 2; _i >= 0; _i--) {
-			var _index = _callstack[_i]._labels[$ _label_name];
-			if (_index != undefined) {
-				_callstack_return_to_index(_i);
-				_initialize_event = true;
-				_callstack_top._event_index = _index;
-				return true;
-			}
-		}
-		
-		return false;
-	}
+	//
+	//static _next = function() {
+	//	_initialize_event = true;
+	//	_callstack_top._event_index++;
+	//}
+	//
+	//static _goto = function(_label_name) {
+	//	var _index = _callstack_top._labels[$ _label_name];
+	//	if (_index != undefined) {
+	//		_initialize_event = true;
+	//		_callstack_top._event_index = _index;
+	//		return true;
+	//	}
+	//	
+	//	for (var _i = array_length(_callstack) - 2; _i >= 0; _i--) {
+	//		var _index = _callstack[_i]._labels[$ _label_name];
+	//		if (_index != undefined) {
+	//			_callstack_return_to_index(_i);
+	//			_initialize_event = true;
+	//			_callstack_top._event_index = _index;
+	//			return true;
+	//		}
+	//	}
+	//	
+	//	return false;
+	//}
 	
 	//_step also returns if the branch has ended
 	static _step = function(_spd) {
 		if (_state != cutscene_state_active) return (_state = cutscene_state_stopped);
 		
 		_spd *= _speed;
+		
+		for (var _i = array_length(_child_branches) - 1; _i >= 0; _i--) {
+			var _stopped = _child_branches[_i]._step();
+			if (_stopped) {
+				array_delete(_child_branches, _i, 1);
+			}
+		}
 		
 		_global._script_stack_push(_live_script);
 		
