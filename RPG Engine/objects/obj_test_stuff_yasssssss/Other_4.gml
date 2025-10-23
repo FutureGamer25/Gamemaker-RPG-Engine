@@ -3,40 +3,40 @@
 //define cutscene
 cutscene = cutscene_begin();
 
-scene_func(function() {
+cs_call(function() {
 	asd = instance_create_depth(0, 0, 0, obj_ice_cream_man);
 });
 
-scene_label("label");
-
-scene_branch_start();
-	scene_lerp(360, 0, 100, "", function(angle) {
-		asd.image_angle = angle;
-	});
-scene_branch_end();
-scene_lerp(1, 2, 40, "", function(scale) {
-	asd.image_xscale = scale;
-});
-scene_lerp(2, 1, 100, "", function(scale) {
-	asd.image_xscale = scale;
-});
-
-scene_obj_move("v:asd", marker_get("A").x, marker_get("A").y, 30);
-scene_obj_move_speed("v:asd", 60, 0, 4);
-scene_wait(10);
-
-scene_obj_move("v:asd", 30, 30, 60);
-scene_lerp(0, 360, 200, "cubic", function(angle) {
-	asd.image_angle = angle;
-});
-scene_obj_move("v:asd", 60, 60, 60);
-scene_wait(60);
-scene_obj_move_speed("v:asd", 0, 60, 2);
-scene_wait(10);
-scene_obj_move_speed("v:asd", 0, 0, 2);
-scene_wait(10);
-
-scene_goto("label");
+//scene_label("label");
+//
+//scene_branch_start();
+//	scene_lerp(360, 0, 100, "", function(angle) {
+//		asd.image_angle = angle;
+//	});
+//scene_branch_end();
+//scene_lerp(1, 2, 40, "", function(scale) {
+//	asd.image_xscale = scale;
+//});
+//scene_lerp(2, 1, 100, "", function(scale) {
+//	asd.image_xscale = scale;
+//});
+//
+//scene_obj_move("v:asd", marker_get("A").x, marker_get("A").y, 30);
+//scene_obj_move_speed("v:asd", 60, 0, 4);
+//scene_wait(10);
+//
+//scene_obj_move("v:asd", 30, 30, 60);
+//scene_lerp(0, 360, 200, "cubic", function(angle) {
+//	asd.image_angle = angle;
+//});
+//scene_obj_move("v:asd", 60, 60, 60);
+//scene_wait(60);
+//scene_obj_move_speed("v:asd", 0, 60, 2);
+//scene_wait(10);
+//scene_obj_move_speed("v:asd", 0, 0, 2);
+//scene_wait(10);
+//
+//scene_goto("label");
 
 cutscene_end();
 

@@ -1,1 +1,0 @@
-cutscene_destroy(scene);

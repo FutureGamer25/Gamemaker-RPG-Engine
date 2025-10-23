@@ -124,6 +124,7 @@
     {"id":{"name":"scr_pause_functions","path":"scripts/scr_pause_functions/scr_pause_functions.yy",},},
     {"id":{"name":"scr_save_and_load_game","path":"scripts/scr_save_and_load_game/scr_save_and_load_game.yy",},},
     {"id":{"name":"scr_save_system","path":"scripts/scr_save_system/scr_save_system.yy",},},
+    {"id":{"name":"scr_scene_functions","path":"scripts/scr_scene_functions/scr_scene_functions.yy",},},
     {"id":{"name":"scr_sound_functions","path":"scripts/scr_sound_functions/scr_sound_functions.yy",},},
     {"id":{"name":"scr_state_machine","path":"scripts/scr_state_machine/scr_state_machine.yy",},},
     {"id":{"name":"scr_text_functions","path":"scripts/scr_text_functions/scr_text_functions.yy",},},
