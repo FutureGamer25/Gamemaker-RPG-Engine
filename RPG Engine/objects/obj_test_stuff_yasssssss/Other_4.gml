@@ -7,13 +7,13 @@ cs_call(function() {
 	asd = instance_create_depth(0, 0, 0, obj_ice_cream_man);
 });
 
-//scene_label("label");
-//
-//scene_branch_start();
+cs_label("label");
+
+cs_branch_begin();
 //	scene_lerp(360, 0, 100, "", function(angle) {
 //		asd.image_angle = angle;
 //	});
-//scene_branch_end();
+cs_branch_end();
 //scene_lerp(1, 2, 40, "", function(scale) {
 //	asd.image_xscale = scale;
 //});
@@ -34,9 +34,9 @@ cs_call(function() {
 //scene_obj_move_speed("v:asd", 0, 60, 2);
 //scene_wait(10);
 //scene_obj_move_speed("v:asd", 0, 0, 2);
-//scene_wait(10);
-//
-//scene_goto("label");
+cs_wait(10);
+
+cs_goto_label("label");
 
 cutscene_end();
 
