@@ -1,119 +1,114 @@
 #region cutscenes
-function cutscene_begin(_auto_start = true) {
-	var _global = __cutscene_get_global();
-	var _cutscene_script = new __cutscene_script_class();
-	var _cutscene = new __cutscene_class(_cutscene_script);
-	_global._script_stack_push(_cutscene_script);
-	_global._cutscene_stack_push(_cutscene);
-	return _cutscene;
+function cutscene_begin(_disable_start = false) {
+	var _template = cutscene_template_begin();
+	return cutscene_from_template(_template, _disable_start);
 }
 
 function cutscene_end() {
-	var _global = __cutscene_get_global();
-	var _cutscene = _global._cutscene_current;
-	_global._script_stack_pop();
-	_global._cutscene_stack_pop();
-	_cutscene._start();
+	cutscene_template_end();
+}
+
+function cutscene_from_template(_template, _disable_start = false) {
+	var _cutscene = new __cutscene_class(_template);
+	if (!_disable_start) _cutscene._start();
+	return _cutscene;
 }
 #endregion
 
-#region basic controls
+#region cutscene controls
 function cutscene_start(_cutscene) {
-	var _global = __cutscene_get_global();
 	_cutscene._start();
 }
 
 function cutscene_stop(_cutscene) {
-	var _global = __cutscene_get_global();
 	_cutscene._branch_current._stop();
 }
 
 function cutscene_pause(_cutscene) {
-	var _global = __cutscene_get_global();
 	_cutscene._branch_current._pause();
 }
 
 function cutscene_resume(_cutscene) {
-	var _global = __cutscene_get_global();
 	_cutscene._branch_current._resume();
 }
 
 function cutscene_set_speed(_cutscene, _speed) {
-	var _global = __cutscene_get_global();
 	_cutscene._branch_current._speed = _speed;
 }
-#endregion
 
-#region more controls
 function cutscene_next(_cutscene, _time_remaining = 0) {
-	static _global = __cutscene_get_global();
 	_cutscene._branch_current._next(_time_remaining);
 }
 
 function cutscene_goto_label(_cutscene, _label_name) {
-	static _global = __cutscene_get_global();
 	_cutscene._branch_current._goto(_label_name);
 }
 
 function cutscene_get_state(_cutscene) {
-	var _global = __cutscene_get_global();
 	return cutscene._branch_current._state;
 }
 
 function cutscene_get_current() {
-	static _global = __cutscene_get_global();
+	static _global = __cutscene_global();
 	return _global._cutscene_current;
 }
 #endregion
 
 #region branches
-function cutscene_branch_start(_cutscene, _cutscene_script, _branch_name = "") {
-	var _global = __cutscene_get_global();
-	_cutscene ??= _global._cutscene_current;
-	_cutscene._branch_root._child_branch_start(_cutscene_script, _branch_name);
+function cutscene_branch_start(_cutscene, _template, _parent_branch = cutscene_branch_root, _branch_name = "") {
+	var _branch = _cutscene._branch_names[$ _parent_branch];
+	if (_branch == undefined) {
+		show_message("CUTSCENE: Cannot start branch as parent branch \"" + _parent_branch + "\" does not exist.");
+		return;
+	}
+	_branch._child_branch_start(_template, _branch_name);
 }
 #endregion
 
-#region scripts
-function cutscene_script_create() {
-	return new __cutscene_script_class();
+#region templates
+function cutscene_template_begin() {
+	var _template = cutscene_template_create();
+	cutscene_template_append_begin(_template);
+	return _template;
 }
 
-function cutscene_script_begin_append(_cutscene_script) {
-	var _global = __cutscene_get_global();
-	_global._script_stack_push(_cutscene_script);
+function cutscene_template_append_begin(_template) {
+	var _global = __cutscene_global();
+	_global._template_stack_push(_template);
 }
 
-function cutscene_script_begin() {
-	var _global = __cutscene_get_global();
-	var _cutscene_script = new __cutscene_script_class();
-	_global._script_stack_push(_cutscene_script);
-	return _cutscene_script;
+function cutscene_template_end() {
+	var _global = __cutscene_global();
+	_global._template_stack_pop();
 }
 
-function cutscene_script_end() {
-	var _global = __cutscene_get_global();
-	_global._script_stack_pop();
+function cutscene_template_create() {
+	return new __cutscene_template_class();
+}
+
+function cutscene_template_get_current() {
+	static _global = __cutscene_global();
+	return _global._template_current;
 }
 #endregion
 
 #region events
 function cutscene_add_event(_constructor, _parameter = undefined) {
-	static _global = __cutscene_get_global();
-	var _script = _global._script_get_current();
-	array_push(_script._events, new __cutscene_event_class(_constructor, _parameter));
+	static _template_get_write = __cutscene_global()._template_get_write;
+	var _template = _template_get_write();
+	array_push(_template._events, new __cutscene_event_class(_constructor, _parameter));
 }
 
 function cutscene_add_event_method(_method, _parameter = undefined) {
-	static _global = __cutscene_get_global();
-	var _script = _global._script_get_current();
-	array_push(_script._events, new __cutscene_method_class(_method, _parameter));
+	static _template_get_write = __cutscene_global()._template_get_write;
+	var _template = _template_get_write();
+	array_push(_template._events, new __cutscene_event_method_class(_method, _parameter));
 }
 
 function cutscene_add_label(_label_name) {
-	static _global = __cutscene_get_global();
-	var _script = _global._script_get_current();
-	_script._labels[$ _label_name] = array_length(_script._events);
+	static _template_get_write = __cutscene_global()._template_get_write;
+	var _template = _template_get_write();
+	_template._labels[$ _label_name] = array_length(_template._events);
 }
 #endregion
 
@@ -121,9 +116,9 @@ function cutscene_add_label(_label_name) {
 
 #region internal
 
-#region global
-#macro cutscene_branch_root 0
-#macro cutscene_branch_current 1
+#region macros
+#macro cutscene_branch_root "__root__"
+#macro cutscene_branch_current "__current__"
 
 #macro cutscene_time_units_frames 0
 #macro cutscene_time_units_seconds 1
@@ -133,24 +128,33 @@ function cutscene_add_label(_label_name) {
 #macro cutscene_state_active 1
 #macro cutscene_state_paused 2
 #macro cutscene_state_stopped 3
+#endregion
 
-function __cutscene_get_global() {
+function __cutscene_global() {
 	static _class = function() constructor {
-		_script_stack_push = function(_script) {
-			array_push(_script_stack, _script);
-			_script_current = _script;
+		_template_stack = [];
+		_template_current = undefined;
+		
+		_cutscene_stack = [];
+		_cutscene_current = undefined;
+		_time_units = cutscene_time_units_frames;
+		
+		_template_stack_push = function(_template) {
+			array_push(_template_stack, _template);
+			_template_current = _template;
 		}
-		_script_stack_pop = function() {
-			array_pop(_script_stack);
-			_script_current = array_last(_script_stack);
+		_template_stack_pop = function() {
+			var _template = array_pop(_template_stack);
+			_template_current = array_last(_template_stack);
+			return _template;
 		}
-		_script_get_current = function() {
-			if (_script_current == undefined) {
+		_template_get_write = function() {
+			if (_template_current == undefined) {
 				if (_cutscene_current == undefined) return undefined;
-				_script_current = new __cutscene_script_class();
-				array_push(_script_stack, _script_current);
+				_template_current = new __cutscene_template_class();
+				array_push(_template_stack, _template_current);
 			}
-			return _script_current;
+			return _template_current;
 		}
 		
 		_cutscene_stack_push = function(_cutscene) {
@@ -158,26 +162,17 @@ function __cutscene_get_global() {
 			_cutscene_current = _cutscene;
 		}
 		_cutscene_stack_pop = function() {
-			array_pop(_cutscene_stack);
+			var _cutscene = array_pop(_cutscene_stack);
 			_cutscene_current = array_last(_cutscene_stack);
+			return _cutscene;
 		}
-		
-		_script_stack = [];
-		_script_current = undefined;
-		
-		_cutscene_stack = [];
-		_cutscene_current = undefined;
-		_time_units = cutscene_time_units_frames;
 	}
 	static _global = new _class();
 	return _global;
 }
-#endregion
 
-#region event types
-enum __cutscene_event_type {
-	_default, _method
-}
+#region template / events
+enum __cutscene_event_type {_default, _method}
 
 function __cutscene_event_class(_runner_class, _parameter) constructor {
 	static _type = __cutscene_event_type._default;
@@ -185,25 +180,30 @@ function __cutscene_event_class(_runner_class, _parameter) constructor {
 	self._parameter = _parameter;
 }
 
-function __cutscene_method_class(_method, _parameter) constructor {
+function __cutscene_event_method_class(_method, _parameter) constructor {
 	static _type = __cutscene_event_type._method;
 	self._method = _method;
 	self._parameter = _parameter;
 }
+
+function __cutscene_template_class() constructor {
+	_events = [];
+	_labels = {};
+}
 #endregion
 
-function __cutscene_class(_script) constructor {
-	static _global = __cutscene_get_global();
-	self._script = _script;
-	_branch_root = new __cutscene_branch_class(self, _script);
+function __cutscene_class(_template) constructor {
+	static _global = __cutscene_global();
+	self._template = _template;
+	_branch_root = new __cutscene_branch_class(self, _template);
 	_branch_current = _branch_root;
-	_branch_names = {};
+	_branch_names = {cutscene_branch_root: _branch_root, cutscene_branch_current: _branch_current};
 	_time_source = undefined;
 	
 	static _start = function() {
-		_global._cutscene_stack_push(self);
+		//_global._cutscene_stack_push(self);
 		_branch_root._start();
-		_global._cutscene_stack_pop();
+		//_global._cutscene_stack_pop();
 		if (!time_source_exists(_time_source)) {
 			var _callback = function() {
 				_step(1);
@@ -231,18 +231,18 @@ function __cutscene_class(_script) constructor {
 	static _step = function(_dt) {
 		_global._cutscene_stack_push(self);
 		_branch_root._step(_dt);
-		_branch_current = _branch_root;
+		_branch_set_current(_branch_root);
 		_global._cutscene_stack_pop();
+	}
+	
+	static _branch_set_current = function(_branch) {
+		_branch_current = _branch;
+		_branch_names[$ cutscene_branch_current] = _branch;
 	}
 }
 
-function __cutscene_script_class() constructor {
-	_events = [];
-	_labels = {};
-}
-
-function __cutscene_branch_class(_cutscene, _script, _name = "") constructor {
-	static _global = __cutscene_get_global();
+function __cutscene_branch_class(_cutscene, _template, _name = "") constructor {
+	static _global = __cutscene_global();
 	self._cutscene = _cutscene;
 	self._name = _name;
 	_state = cutscene_state_initial;
@@ -252,14 +252,10 @@ function __cutscene_branch_class(_cutscene, _script, _name = "") constructor {
 	_time_units_scale = 1;
 	_child_branches = [];
 	
-	self._script = _script;
+	_script = _template;
 	_event_index = 0;
 	_event_runner = undefined;
-	
-	_callstack_size = 0;
-	_scripts = [];
-	_event_indexes = [];
-	_event_runners = [];
+	_callstack = [];
 	
 	static _start = function() {
 		if (_state != cutscene_state_initial) {
@@ -268,10 +264,12 @@ function __cutscene_branch_class(_cutscene, _script, _name = "") constructor {
 			_time_units_scale = 1;
 			_child_branches = [];
 			
-			_callstack_reset();
+			_callstack_return_to(0);
+			_event_index = 0;
+			_event_runner = undefined;
 		}
 		_state = cutscene_state_active;
-		_step(0);
+		//_step(0);
 	}
 	
 	static _stop = function() {
@@ -302,7 +300,7 @@ function __cutscene_branch_class(_cutscene, _script, _name = "") constructor {
 			if (_stopped) array_delete(_child_branches, _i, 1);
 		}
 		
-		_cutscene._branch_current = self;
+		_cutscene._branch_set_current(self);
 		_time_remaining += _dt;
 		_time_units_scale = (_time_units_get_scale == undefined) ? 1 : _time_units_get_scale();
 		
@@ -336,9 +334,9 @@ function __cutscene_branch_class(_cutscene, _script, _name = "") constructor {
 			}
 			
 			//push live events to the callstack
-			if (_global._script_current != undefined) {
-				_callstack_push(_global._script_current, 0);
-				_global._script_stack_pop();
+			if (_global._template_current != undefined) {
+				_callstack_push(_global._template_current, 0);
+				_global._template_stack_pop();
 			}
 		}
 		
@@ -352,48 +350,57 @@ function __cutscene_branch_class(_cutscene, _script, _name = "") constructor {
 	}
 	
 	static _goto = function(_label_name) {
-		_event_runner = undefined;
-		_event_index = _script._labels[$ _label_name];
+		var _new_index = _script._labels[$ _label_name];
+		if (_new_index != undefined) {
+			_event_index = _new_index;
+			_event_runner = undefined;
+			return;
+		}
+		
+		for (var _i = array_length(_callstack) - 1; _i >= 0; _i--) {
+			_new_index = _callstack[_i]._script._labels[$ _label_name];
+			if (_new_index != undefined) {
+				_callstack_return_to(_i);
+				_event_index = _new_index;
+				_event_runner = undefined;
+				return;
+			}
+		}
+		
+		show_message("CUTSCENE: Cannot goto label \"" + _label_name + "\".")
 	}
 	
-	static _child_branch_start = function(_script, _name) {
+	static _child_branch_start = function(_template, _name) {
 		if (_cutscene._branch_names[$ _name] != undefined) _name = "";
-		var _branch = new __cutscene_branch_class(_cutscene, _script, _name);
+		var _branch = new __cutscene_branch_class(_cutscene, _template, _name);
 		if (_name != "") _cutscene._branch_names[$ _name] = _branch;
 		array_push(_child_branches, _branch);
 		_branch._start();
 	}
 	
-	static _callstack_push = function(_script, _event_index) {
-		self._scripts[_callstack_size] = self._script;
-		self._event_indexes[_callstack_size] = self._event_index;
-		_event_runners[_callstack_size] = _event_runner;
-		_callstack_size++;
-		self._script = _script;
-		self._event_index = _event_index;
+	static _callstack_push = function(_new_script, _new_event_index) {
+		array_push(_callstack, {_script, _event_index, _event_runner});
+		_script = _new_script;
+		_event_index = _new_event_index;
 		_event_runner = undefined;
 	}
 	
 	static _callstack_pop = function() {
-		if (_callstack_size <= 0) return true;
-		_callstack_size--;
-		_script = _scripts[_callstack_size];
-		_event_index = _event_indexes[_callstack_size];
-		_event_runner = _event_runners[_callstack_size];
-		_scripts[_callstack_size] = undefined;
-		_event_indexes[_callstack_size] = 0;
-		_event_runners[_callstack_size] = undefined;
+		if (array_length(_callstack) <= 0) return true;
+		var _previous = array_pop(_callstack);
+		_script = _previous._script;
+		_event_index = _previous._event_index;
+		_event_runner = _previous._event_runner;
 		return false;
 	}
 	
-	static _callstack_reset = function() {
-		_callstack_size = 0;
-		_script = _scripts[0];
-		_event_index = 0;
-		_event_runner = undefined;
-		array_resize(_scripts, 0);
-		array_resize(_event_indexes, 0);
-		array_resize(_event_runners, 0);
+	static _callstack_return_to = function(_callstack_index) {
+		if (_callstack_index >= array_length(_callstack)) return;
+		var _previous = _callstack[_callstack_index];
+		array_resize(_callstack, _callstack_index);
+		_script = _previous._script;
+		_event_index = _previous._event_index;
+		_event_runner = _previous._event_runner;
 	}
 }
 
@@ -408,7 +415,7 @@ function __cutscene_branch_class(_cutscene, _script, _name = "") constructor {
 //	_time_source = undefined;
 //	_state = cutscene_state_initial;
 //	
-//	static _global = __cutscene_get_global();
+//	static _global = __cutscene_global();
 //	
 //	static _enable_time_source = function() {
 //		if (!_automatic_step || time_source_exists(_time_source)) return;
@@ -519,10 +526,10 @@ function __cutscene_branch_class(_cutscene, _script, _name = "") constructor {
 //	
 //	_initialize_event = true;
 //	_running_event = undefined;
-//	_live_script = new __cutscene_script_class();
+//	_live_script = new __cutscene_template_class();
 //	_child_branches = [];
 //	
-//	static _global = __cutscene_get_global();
+//	static _global = __cutscene_global();
 //	
 //	//static _start = function() {
 //	//	_initialize_event = true;
@@ -574,7 +581,7 @@ function __cutscene_branch_class(_cutscene, _script, _name = "") constructor {
 //			}
 //		}
 //		
-//		_global._script_stack_push(_live_script);
+//		_global._template_stack_push(_live_script);
 //		
 //		//run step
 //		if (_running_event != undefined) {
@@ -593,7 +600,7 @@ function __cutscene_branch_class(_cutscene, _script, _name = "") constructor {
 //		//run next event
 //		if (_initialize_event) _init_event();
 //		
-//		_global._script_stack_pop();
+//		_global._template_stack_pop();
 //		
 //		return (_state == cutscene_state_stopped);
 //	}
@@ -605,9 +612,9 @@ function __cutscene_branch_class(_cutscene, _script, _name = "") constructor {
 //			//check for live defined events
 //			if (array_length(_live_script._events) > 0) {
 //				_callstack_push(_live_script);
-//				_global._script_stack_pop();
-//				_live_script = new __cutscene_script_class();
-//				_global._script_stack_push(_live_script);
+//				_global._template_stack_pop();
+//				_live_script = new __cutscene_template_class();
+//				_global._template_stack_push(_live_script);
 //			}
 //			
 //			while (_callstack_top._event_index >= array_length(_callstack_top._events)) {
@@ -662,39 +669,6 @@ function __cutscene_branch_class(_cutscene, _script, _name = "") constructor {
 
 #region old stuff
 /*
-function cutscene_create() {
-	var inst = instance_create_depth(0, 0, 0, __cutscene_handler);
-	inst.parentScope = method_get_self(method(self, cutscene_create));
-	__cutscene_get_data().current = inst;
-	return inst;
-}
-
-function cutscene_set_autodestroy(cutscene = __cutscene_get_data().current, enable) {
-	cutscene.autoDestroy = enable;
-}
-
-function cutscene_destroy(cutscene = __cutscene_get_data().current) {
-	if instance_exists(cutscene) {
-		instance_destroy(cutscene);
-	}
-}
-
-function cutscene_start(cutscene = __cutscene_get_data().current) {
-	cutscene.play = true;
-}
-
-function cutscene_next(cutscene = __cutscene_get_data().current) {
-	cutscene.currentThread.sceneIndex ++;
-}
-
-function cutscene_pause(cutscene = __cutscene_get_data().current) {
-	cutscene.play = false;
-}
-
-function cutscene_unpause(cutscene = __cutscene_get_data().current) {
-	cutscene.play = true;
-}
-
 #region wrappers
 function cutscene_wrapper(getter_method = undefined, setter_method = undefined) {
 	return {
@@ -715,18 +689,6 @@ function cutscene_wrapper_set(wrapper, value) {
 
 function cutscene_wrapper_get(wrapper) {
 	return wrapper.get();
-}
-#endregion
-
-function cutscene_use_variables(cutscene = __cutscene_get_data().current, use_variables) {
-	cutscene.useStringVariables = use_variables;
-}
-
-#region internal
-///@ignore
-function __cutscene_get_data() {
-	static data = {current: noone};
-	return data;
 }
 #endregion
 */ #endregion

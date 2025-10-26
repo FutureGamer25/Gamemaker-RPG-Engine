@@ -20,20 +20,24 @@ cs_branch_end();
 //scene_lerp(2, 1, 100, "", function(scale) {
 //	asd.image_xscale = scale;
 //});
-//
-//scene_obj_move("v:asd", marker_get("A").x, marker_get("A").y, 30);
-//scene_obj_move_speed("v:asd", 60, 0, 4);
-//scene_wait(10);
-//
-//scene_obj_move("v:asd", 30, 30, 60);
+
+cs_call(function() {
+	cs_obj_move(asd, marker_get("A").x, marker_get("A").y, 30);
+	cs_obj_move_speed(asd, 60, 0, 4);
+});
+cs_wait(10);
+
+cs_call(function() { cs_obj_move(asd, 30, 30, 60); });
 //scene_lerp(0, 360, 200, "cubic", function(angle) {
 //	asd.image_angle = angle;
 //});
-//scene_obj_move("v:asd", 60, 60, 60);
-//scene_wait(60);
-//scene_obj_move_speed("v:asd", 0, 60, 2);
-//scene_wait(10);
-//scene_obj_move_speed("v:asd", 0, 0, 2);
+cs_call(function() {
+	cs_obj_move(asd, 60, 60, 60);
+	cs_wait(60);
+	cs_obj_move_speed(asd, 0, 60, 2);
+	cs_wait(10);
+	cs_obj_move_speed(asd, 0, 0, 2);
+});
 cs_wait(10);
 
 cs_goto_label("label");
