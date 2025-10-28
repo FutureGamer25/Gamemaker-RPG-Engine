@@ -3,11 +3,12 @@
 //define cutscene
 cutscene = cutscene_begin();
 
-cs_call(function() {
+cs_func(function() {
 	asd = instance_create_depth(0, 0, 0, obj_ice_cream_man);
 });
 
 cs_label("label");
+
 
 cs_branch_begin();
 //	scene_lerp(360, 0, 100, "", function(angle) {
@@ -21,20 +22,22 @@ cs_branch_end();
 //	asd.image_xscale = scale;
 //});
 
-cs_call(function() {
-	cs_obj_move(asd, marker_get("A").x, marker_get("A").y, 30);
-	cs_obj_move_speed(asd, 60, 0, 4);
+cs_time_units(cutscene_units_seconds);
+cs_func(function() {
+	cs_obj_move(asd, marker_get("A").x, marker_get("A").y, 1);
+	cs_obj_move_speed(asd, 60, 0, 120);
 });
-cs_wait(10);
+cs_wait(0.3);
 
-cs_call(function() { cs_obj_move(asd, 30, 30, 60); });
-//scene_lerp(0, 360, 200, "cubic", function(angle) {
+cs_func(function() { cs_obj_move(asd, 30, 30, 2); });
+//scene_lerp(0, 360, 7, "cubic", function(angle) {
 //	asd.image_angle = angle;
 //});
-cs_call(function() {
-	cs_obj_move(asd, 60, 60, 60);
-	cs_wait(60);
-	cs_obj_move_speed(asd, 0, 60, 2);
+cs_func(function() {
+	cs_obj_move(asd, 60, 60, 2);
+	cs_wait(2);
+	cs_obj_move_speed(asd, 0, 60, 60);
+	cs_time_units(cutscene_units_frames);
 	cs_wait(10);
 	cs_obj_move_speed(asd, 0, 0, 2);
 });

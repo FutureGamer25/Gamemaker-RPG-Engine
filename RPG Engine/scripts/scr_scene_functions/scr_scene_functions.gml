@@ -1,3 +1,5 @@
+//feather ignore all
+
 #region add functions
 function scene_func(func, param_array = undefined) {
 	static data = __cutscene_get_data();
@@ -138,7 +140,7 @@ function scene_wait(frames) {
 	scene_struct_set(struct, "frame", frames);
 	
 	scene_method_repeat(struct, function() {
-		if (frame <= 0) cutscene_next();
+		if (frame <= 0) cutscene_event_next();
 		frame --;
 	});
 }
@@ -159,7 +161,7 @@ function scene_lerp(x1, x2, frames, ease_type, callback) {
 		frame ++;
 		var val = frame / frameMax;
 		if (val > 1) {
-			cutscene_next();
+			cutscene_event_next();
 			return;
 		}
 		callback(lerp_type(x1, x2, val, type));
@@ -192,7 +194,7 @@ function scene_obj_move(_id, _x, _y, frames) {
 		if (pos > frames) {
 			inst.x = distX + oldX;
 			inst.y = distY + oldY;
-			cutscene_next();
+			cutscene_event_next();
 			return;
 		}
 		var percent = pos / frames;
@@ -220,7 +222,7 @@ function scene_obj_move_speed(_id, _x, _y, _speed) {
 		if (pos > dist) {
 			inst.x = distX + oldX;
 			inst.y = distY + oldY;
-			cutscene_next();
+			cutscene_event_next();
 			return;
 		}
 		var percent = pos / dist;

@@ -13,6 +13,11 @@ function cutscene_from_template(_template, _disable_start = false) {
 	if (!_disable_start) _cutscene._start();
 	return _cutscene;
 }
+
+function cutscene_get_current() {
+	static _global = __cutscene_global();
+	return _global._cutscene_current;
+}
 #endregion
 
 #region cutscene controls
@@ -21,60 +26,99 @@ function cutscene_start(_cutscene) {
 }
 
 function cutscene_stop(_cutscene) {
-	_cutscene._branch_current._stop();
+	_cutscene._stop();
 }
 
 function cutscene_pause(_cutscene) {
-	_cutscene._branch_current._pause();
+	_cutscene._pause();
 }
 
 function cutscene_resume(_cutscene) {
-	_cutscene._branch_current._resume();
-}
-
-function cutscene_set_speed(_cutscene, _speed) {
-	_cutscene._branch_current._speed = _speed;
-}
-
-function cutscene_next(_cutscene, _time_remaining = 0) {
-	_cutscene._branch_current._next(_time_remaining);
-}
-
-function cutscene_goto_label(_cutscene, _label_name) {
-	_cutscene._branch_current._goto(_label_name);
+	_cutscene._resume();
 }
 
 function cutscene_get_state(_cutscene) {
-	return cutscene._branch_current._state;
+	return _cutscene._branch_root._state;
 }
 
-function cutscene_get_current() {
+function cutscene_set_speed(_cutscene, _speed) {
+	_cutscene._set_speed(_speed);
+}
+
+function cutscene_get_speed(_cutscene) {
+	return _cutscene._get_speed();
+}
+
+function cutscene_time_units(_cutscene, _time_units) {
+	_cutscene._branch_root._set_time_units(_time_units);
+}
+
+function cutscene_event_next(_time_remaining = 0) {
 	static _global = __cutscene_global();
-	return _global._cutscene_current;
+	_global._cutscene_current._branch_current._next(_time_remaining);
+}
+
+function cutscene_goto_label(_cutscene, _label_name) {
+	_cutscene._branch_root._goto(_label_name);
+}
+
+//function cutscene_enable_auto_step(_cutscene, _enable) {
+//
+//}
+
+function cutscene_step(_cutscene, _frames = 1) {
+	_cutscene._step(_frames);
 }
 #endregion
 
 #region branches
 function cutscene_branch_start(_cutscene, _template, _parent_branch = cutscene_branch_root, _branch_name = "") {
-	var _branch = _cutscene._branch_names[$ _parent_branch];
+	var _branch = _cutscene._get_branch(_parent_branch);
 	if (_branch == undefined) {
 		show_message("CUTSCENE: Cannot start branch as parent branch \"" + _parent_branch + "\" does not exist.");
 		return;
 	}
 	_branch._child_branch_start(_template, _branch_name);
 }
+
+function cutscene_branch_stop(_cutscene, _branch_name) {
+	_cutscene._get_branch(_branch_name)._stop();
+}
+
+function cutscene_branch_pause(_cutscene, _branch_name) {
+	_cutscene._get_branch(_branch_name)._pause();
+}
+
+function cutscene_branch_resume(_cutscene, _branch_name) {
+	_cutscene._get_branch(_branch_name)._resume();
+}
+
+function cutscene_branch_get_state(_cutscene, _branch_name) {
+	return _cutscene._get_branch(_branch_name)._state;
+}
+
+function cutscene_branch_set_speed(_cutscene, _branch_name, _speed) {
+	_cutscene._get_branch(_branch_name)._speed = _speed;
+}
+
+function cutscene_branch_get_speed(_cutscene, _branch_name) {
+	return _cutscene._get_branch(_branch_name)._speed;
+}
+
+function cutscene_branch_time_units(_cutscene, _branch_name, _time_units) {
+	_cutscene._get_branch(_branch_name)._set_time_units(_time_units);
+}
+
+function cutscene_branch_goto_label(_cutscene, _branch_name, _label_name) {
+	_cutscene._get_branch(_branch_name)._goto(_label_name);
+}
 #endregion
 
 #region templates
-function cutscene_template_begin() {
-	var _template = cutscene_template_create();
-	cutscene_template_append_begin(_template);
-	return _template;
-}
-
-function cutscene_template_append_begin(_template) {
+function cutscene_template_begin(_append_to_template = cutscene_template_create()) {
 	var _global = __cutscene_global();
-	_global._template_stack_push(_template);
+	_global._template_stack_push(_append_to_template);
+	return _append_to_template;
 }
 
 function cutscene_template_end() {
@@ -86,10 +130,10 @@ function cutscene_template_create() {
 	return new __cutscene_template_class();
 }
 
-function cutscene_template_get_current() {
-	static _global = __cutscene_global();
-	return _global._template_current;
-}
+//function cutscene_template_get_current() {
+//	static _global = __cutscene_global();
+//	return _global._template_current;
+//}
 #endregion
 
 #region events
@@ -120,9 +164,9 @@ function cutscene_add_label(_label_name) {
 #macro cutscene_branch_root "__root__"
 #macro cutscene_branch_current "__current__"
 
-#macro cutscene_time_units_frames 0
-#macro cutscene_time_units_seconds 1
-#macro cutscene_time_units_seconds_dt 2
+#macro cutscene_units_frames 0
+#macro cutscene_units_seconds 1
+#macro cutscene_units_seconds_dt 2
 
 #macro cutscene_state_initial 0
 #macro cutscene_state_active 1
@@ -132,22 +176,21 @@ function cutscene_add_label(_label_name) {
 
 function __cutscene_global() {
 	static _class = function() constructor {
-		_template_stack = [];
-		_template_current = undefined;
-		
-		_cutscene_stack = [];
 		_cutscene_current = undefined;
-		_time_units = cutscene_time_units_frames;
+		_template_current = undefined;
+		_template_stack = [];
 		
 		_template_stack_push = function(_template) {
 			array_push(_template_stack, _template);
 			_template_current = _template;
 		}
+		
 		_template_stack_pop = function() {
 			var _template = array_pop(_template_stack);
 			_template_current = array_last(_template_stack);
 			return _template;
 		}
+		
 		_template_get_write = function() {
 			if (_template_current == undefined) {
 				if (_cutscene_current == undefined) return undefined;
@@ -156,22 +199,12 @@ function __cutscene_global() {
 			}
 			return _template_current;
 		}
-		
-		_cutscene_stack_push = function(_cutscene) {
-			array_push(_cutscene_stack, _cutscene);
-			_cutscene_current = _cutscene;
-		}
-		_cutscene_stack_pop = function() {
-			var _cutscene = array_pop(_cutscene_stack);
-			_cutscene_current = array_last(_cutscene_stack);
-			return _cutscene;
-		}
 	}
 	static _global = new _class();
 	return _global;
 }
 
-#region template / events
+#region templates / events
 enum __cutscene_event_type {_default, _method}
 
 function __cutscene_event_class(_runner_class, _parameter) constructor {
@@ -192,18 +225,17 @@ function __cutscene_template_class() constructor {
 }
 #endregion
 
+#region cutscenes
 function __cutscene_class(_template) constructor {
 	static _global = __cutscene_global();
 	self._template = _template;
-	_branch_root = new __cutscene_branch_class(self, _template);
+	_branch_root = new __cutscene_branch_class(self, _template, cutscene_branch_root);
+	_branch_names = {cutscene_branch_root: _branch_root, cutscene_branch_current: 0};
 	_branch_current = _branch_root;
-	_branch_names = {cutscene_branch_root: _branch_root, cutscene_branch_current: _branch_current};
 	_time_source = undefined;
 	
 	static _start = function() {
-		//_global._cutscene_stack_push(self);
 		_branch_root._start();
-		//_global._cutscene_stack_pop();
 		if (!time_source_exists(_time_source)) {
 			var _callback = function() {
 				_step(1);
@@ -216,28 +248,27 @@ function __cutscene_class(_template) constructor {
 		}
 	}
 	
-	//static _stop = function() {
-	//	_branch_root._stop();
-	//}
-	//
-	//static _pause = function() {
-	//	_branch_root._pause();
-	//}
-	//
-	//static _resume = function() {
-	//	_branch_root._resume();
-	//}
+	static _stop = function() { _branch_root._stop(); }
+	
+	static _pause = function() { _branch_root._pause(); }
+	
+	static _resume = function() { _branch_root._resume(); }
+	
+	static _set_speed = function(_speed) { _branch_root._speed = _speed; }
+	
+	static _get_speed = function() { return _branch_root._speed; }
 	
 	static _step = function(_dt) {
-		_global._cutscene_stack_push(self);
+		var _previous_cutscene = _global._cutscene_current;
+		_global._cutscene_current = self;
 		_branch_root._step(_dt);
-		_branch_set_current(_branch_root);
-		_global._cutscene_stack_pop();
+		_global._cutscene_current = _previous_cutscene;
 	}
 	
-	static _branch_set_current = function(_branch) {
-		_branch_current = _branch;
-		_branch_names[$ cutscene_branch_current] = _branch;
+	static _get_branch = function(_branch_name) {
+		if (_branch_name == cutscene_branch_current) return _branch_current;
+		var _branch = _branch_names[$ _branch_name];
+		return _branch;
 	}
 }
 
@@ -247,37 +278,35 @@ function __cutscene_branch_class(_cutscene, _template, _name = "") constructor {
 	self._name = _name;
 	_state = cutscene_state_initial;
 	_speed = 1;
+	_time_units = 1;
 	_time_remaining = 0;
-	_time_units_get_scale = undefined;
-	_time_units_scale = 1;
 	_child_branches = [];
 	
 	_script = _template;
 	_event_index = 0;
-	_event_runner = undefined;
+	_event_instance = undefined;
 	_callstack = [];
+	
+	//_pause_callback = undefined;
+	//_resume_callback = undefined;
+	_stop_callback = undefined;
 	
 	static _start = function() {
 		if (_state != cutscene_state_initial) {
+			_time_units = 1;
 			_time_remaining = 0;
-			_time_units_get_scale = undefined;
-			_time_units_scale = 1;
 			_child_branches = [];
 			
 			_callstack_return_to(0);
 			_event_index = 0;
-			_event_runner = undefined;
+			_event_instance = undefined;
 		}
 		_state = cutscene_state_active;
-		//_step(0);
 	}
 	
 	static _stop = function() {
 		_state = cutscene_state_stopped;
-		if (_name != "") {
-			struct_remove(_cutscene._branch_names, _name);
-			_name = "";
-		}
+		if (_stop_callback != undefined) _stop_callback(self);
 	}
 	
 	static _pause = function() {
@@ -300,14 +329,12 @@ function __cutscene_branch_class(_cutscene, _template, _name = "") constructor {
 			if (_stopped) array_delete(_child_branches, _i, 1);
 		}
 		
-		_cutscene._branch_set_current(self);
-		_time_remaining += _dt;
-		_time_units_scale = (_time_units_get_scale == undefined) ? 1 : _time_units_get_scale();
+		var _previous_branch = _cutscene._branch_current;
+		_cutscene._branch_current = self;
 		
 		//run current branch
 		while (_state == cutscene_state_active) {
-			var _runner = _event_runner;
-			if (_runner == undefined) {
+			if (_event_instance == undefined) {
 				//init event
 				if (_event_index >= array_length(_script._events)) {
 					var _is_empty = _callstack_pop();
@@ -320,17 +347,17 @@ function __cutscene_branch_class(_cutscene, _template, _name = "") constructor {
 					_event_index++;
 					_event._method(_event._parameter);
 				} else {
-					_runner = new _event._runner_class(_cutscene, _event._parameter);
-					_event_runner = _runner;
-					_runner._create(_event._parameter);
+					_event_instance = new _event._runner_class(_cutscene, _event._parameter);
+					_event_instance._create(_event._parameter);
 				}
 			} else {
 				//run event step
-				if (_time_remaining <= 0) break;
+				if (_dt <= 0) break;
 				
-				var _scaled_time = _time_remaining * _time_units_scale;
+				var _scale = is_real(_time_units) ? _time_units : _time_units();
 				_time_remaining = 0;
-				_runner._step(_scaled_time);
+				_event_instance._step(_dt * _scale);
+				_dt = _time_remaining / _scale;
 			}
 			
 			//push live events to the callstack
@@ -340,20 +367,33 @@ function __cutscene_branch_class(_cutscene, _template, _name = "") constructor {
 			}
 		}
 		
+		_cutscene._branch_current = _previous_branch;
+		
 		return (_state == cutscene_state_stopped);
 	}
 	
 	static _next = function(_time_remaining) {
-		_event_runner = undefined;
+		_event_instance = undefined;
 		_event_index++;
-		self._time_remaining += _time_remaining / _time_units_scale;
+		self._time_remaining += _time_remaining;
+	}
+	
+	static _set_time_units = function(_time_units) {
+		static _seconds = function() { return 1 / game_get_speed(gamespeed_fps); }
+		static _seconds_dt = function() { return delta_time / 1_000_000; }
+		switch (_time_units) {
+			case cutscene_units_frames:     _time_units = 1;           break;
+			case cutscene_units_seconds:    _time_units = _seconds;    break;
+			case cutscene_units_seconds_dt: _time_units = _seconds_dt; break;
+		}
+		self._time_units = _time_units;
 	}
 	
 	static _goto = function(_label_name) {
 		var _new_index = _script._labels[$ _label_name];
 		if (_new_index != undefined) {
 			_event_index = _new_index;
-			_event_runner = undefined;
+			_event_instance = undefined;
 			return;
 		}
 		
@@ -362,27 +402,33 @@ function __cutscene_branch_class(_cutscene, _template, _name = "") constructor {
 			if (_new_index != undefined) {
 				_callstack_return_to(_i);
 				_event_index = _new_index;
-				_event_runner = undefined;
+				_event_instance = undefined;
 				return;
 			}
 		}
 		
-		show_message("CUTSCENE: Cannot goto label \"" + _label_name + "\".")
+		show_message("CUTSCENE: Cannot goto label \"" + _label_name + "\".");
 	}
 	
 	static _child_branch_start = function(_template, _name) {
 		if (_cutscene._branch_names[$ _name] != undefined) _name = "";
 		var _branch = new __cutscene_branch_class(_cutscene, _template, _name);
 		if (_name != "") _cutscene._branch_names[$ _name] = _branch;
+		_branch._stop_callback = function(_branch) {
+			if (_branch._name != "") {
+				struct_remove(_cutscene._branch_names, _branch._name);
+				_branch._name = "";
+			}
+		}
 		array_push(_child_branches, _branch);
 		_branch._start();
 	}
 	
 	static _callstack_push = function(_new_script, _new_event_index) {
-		array_push(_callstack, {_script, _event_index, _event_runner});
+		array_push(_callstack, {_script, _event_index});
 		_script = _new_script;
 		_event_index = _new_event_index;
-		_event_runner = undefined;
+		_event_instance = undefined;
 	}
 	
 	static _callstack_pop = function() {
@@ -390,7 +436,7 @@ function __cutscene_branch_class(_cutscene, _template, _name = "") constructor {
 		var _previous = array_pop(_callstack);
 		_script = _previous._script;
 		_event_index = _previous._event_index;
-		_event_runner = _previous._event_runner;
+		_event_instance = undefined;
 		return false;
 	}
 	
@@ -400,269 +446,9 @@ function __cutscene_branch_class(_cutscene, _template, _name = "") constructor {
 		array_resize(_callstack, _callstack_index);
 		_script = _previous._script;
 		_event_index = _previous._event_index;
-		_event_runner = _previous._event_runner;
+		_event_instance = undefined;
 	}
 }
-
-#region idkkkkkk
-//function __cutscene_class(_script, _branch_name_struct = {}) constructor {
-//	_automatic_step = true;
-//	self._script = _script;
-//	_branch_names = _branch_name_struct;
-//	_branches = [undefined];
-//	_branch_count = 0;
-//	_branch_current = undefined;
-//	_time_source = undefined;
-//	_state = cutscene_state_initial;
-//	
-//	static _global = __cutscene_global();
-//	
-//	static _enable_time_source = function() {
-//		if (!_automatic_step || time_source_exists(_time_source)) return;
-//		var _callback = function() {
-//			var _stopped = _step();
-//			if (_stopped) time_source_destroy(_time_source);
-//		}
-//		_time_source = time_source_create(time_source_game, 1, time_source_units_frames, _callback, [], -1);
-//	}
-//	
-//	static _start = function() {
-//		_state = cutscene_state_active;
-//		array_resize(_branches, 1);
-//		_branches[0] = new __cutscene_branch_class(self, _script);
-//		_branch_count = 1;
-//		_enable_time_source();
-//	}
-//	
-//	static _stop = function() {
-//		_state = cutscene_state_stopped;
-//		time_source_destroy(_time_source);
-//	}
-//	
-//	static _pause = function() {
-//		if (_state != cutscene_state_active) return;
-//		_state = cutscene_state_paused;
-//		time_source_destroy(_time_source);
-//	}
-//	
-//	static _unpause = function() {
-//		if (_state != cutscene_state_paused) return;
-//		_state = cutscene_state_active;
-//		_enable_time_source();
-//	}
-//	
-//	static _set_speed = function(_speed) {
-//		_branch_root._speed = _speed;
-//	}
-//	
-//	static _next = function(_branch_name) {
-//		_activate();
-//		_get_branch(_branch_name)._next();
-//	}
-//	
-//	static _step = function() {
-//		if (_state != cutscene_state_active) return (_state == cutscene_state_stopped);
-//		
-//		_global._cutscene_stack_push(self);
-//		for (var _i = array_length(_branches) - 1; _i >= 0; _i--) {
-//			var _branch = _branches[_i];
-//			if (_branch == undefined) { //clean up branches
-//				array_delete(_branches, _i, 1);
-//				continue;
-//			}
-//			
-//			var _ended = _branch._step(1);
-//			if (_ended) {
-//				_branch_remove(_branch);
-//			}
-//		}
-//		_global._cutscene_stack_pop();
-//		
-//		if (_branch_count <= 0) _state = cutscene_state_stopped;
-//		return (_state == cutscene_state_stopped);
-//	}
-//	
-//	static _get_branch = function(_branch_name) {
-//		if (_branch_name = "__current__") {
-//			return _branch_current;
-//		}
-//		return _branch_names[$ _branch_name];
-//	}
-//	
-//	static _branch_add = function(_branch, _name = "") {
-//		_branch_count++;
-//		array_push(_branches, _branch);
-//		if (_name != "" && _branch_names[$ _name] = undefined) {
-//			_branch_names[$ _name] = _branch;
-//			_branch._name = _name;
-//		}
-//	}
-//	
-//	static _branch_remove = function(_branch) {
-//		var _index = array_get_index(_branches, _branch);
-//		_branches[_index] = undefined;
-//		_branch_count--;
-//		if (_branch._name != "") {
-//			struct_remove(_branch_names, _branch._name);
-//			_branch._name = "";
-//		}
-//	}
-//}
-#endregion
-
-#region idkkkkkkkkkkkkkkkkkkkkkkk
-//function __cutscene_branch_class(_cutscene, _script) constructor {
-//	_name = ""; //used by __cutscene_class
-//	
-//	_state = cutscene_state_initial;
-//	_speed = 1;
-//	
-//	_callstack_top = {
-//		_event_index: 0,
-//		_events: _script._events,
-//		_labels: _script._labels,
-//	};
-//	_callstack = [_callstack_top];
-//	
-//	_initialize_event = true;
-//	_running_event = undefined;
-//	_live_script = new __cutscene_template_class();
-//	_child_branches = [];
-//	
-//	static _global = __cutscene_global();
-//	
-//	//static _start = function() {
-//	//	_initialize_event = true;
-//	//	_callstack_top._event_index = 0;
-//	//	_running_event = undefined;
-//	//}
-//	//
-//	//static _stop = function() {
-//	//	_callstack_top._event_index = array_length(_callstack_top._events);
-//	//}
-//	//
-//	//static _next = function() {
-//	//	_initialize_event = true;
-//	//	_callstack_top._event_index++;
-//	//}
-//	//
-//	//static _goto = function(_label_name) {
-//	//	var _index = _callstack_top._labels[$ _label_name];
-//	//	if (_index != undefined) {
-//	//		_initialize_event = true;
-//	//		_callstack_top._event_index = _index;
-//	//		return true;
-//	//	}
-//	//	
-//	//	for (var _i = array_length(_callstack) - 2; _i >= 0; _i--) {
-//	//		var _index = _callstack[_i]._labels[$ _label_name];
-//	//		if (_index != undefined) {
-//	//			_callstack_return_to_index(_i);
-//	//			_initialize_event = true;
-//	//			_callstack_top._event_index = _index;
-//	//			return true;
-//	//		}
-//	//	}
-//	//	
-//	//	return false;
-//	//}
-//	
-//	//_step also returns if the branch has ended
-//	static _step = function(_spd) {
-//		if (_state != cutscene_state_active) return (_state == cutscene_state_stopped);
-//		
-//		_spd *= _speed;
-//		
-//		//run child branches
-//		for (var _i = array_length(_child_branches) - 1; _i >= 0; _i--) {
-//			var _stopped = _child_branches[_i]._step();
-//			if (_stopped) {
-//				array_delete(_child_branches, _i, 1);
-//			}
-//		}
-//		
-//		_global._template_stack_push(_live_script);
-//		
-//		//run step
-//		if (_running_event != undefined) {
-//			#region get delta time
-//			var _dt;
-//			switch (_running_event._time_units) {
-//				case cutscene_time_units_frames: _dt = _spd; break;
-//				case cutscene_time_units_seconds: _dt = _spd / game_get_speed(gamespeed_fps); break;
-//				case cutscene_time_units_seconds_dt: _dt = _spd * delta_time / 1_000_000; break;
-//			}
-//			#endregion
-//			
-//			_running_event._step(_dt);
-//		}
-//		
-//		//run next event
-//		if (_initialize_event) _init_event();
-//		
-//		_global._template_stack_pop();
-//		
-//		return (_state == cutscene_state_stopped);
-//	}
-//	
-//	static _init_event = function() {
-//		_initialize_event = true;
-//		_running_event = undefined;
-//		do {
-//			//check for live defined events
-//			if (array_length(_live_script._events) > 0) {
-//				_callstack_push(_live_script);
-//				_global._template_stack_pop();
-//				_live_script = new __cutscene_template_class();
-//				_global._template_stack_push(_live_script);
-//			}
-//			
-//			while (_callstack_top._event_index >= array_length(_callstack_top._events)) {
-//				var _popped = _callstack_pop();
-//				if (!_popped) { //callstack is empty
-//					_state = cutscene_state_stopped;
-//					return;
-//				}
-//			}
-//			
-//			//run event
-//			var _event = _callstack_top._events[_callstack_top._event_index];
-//			
-//			if (_event._type == __cutscene_event_type._constructor) {
-//				_initialize_event = false;
-//				_running_event = new _event._constructor(_event._parameter);
-//			} else {
-//				_callstack_top._event_index++;
-//				_event._method(_event._parameter);
-//			}
-//		} until (!_initialize_event)
-//	}
-//	
-//	#region callstack
-//	static _callstack_push = function(_script, _event_index = 0) {
-//		_callstack_top = {
-//			_event_index: _event_index,
-//			_events: _script._events,
-//			_labels: _script._labels,
-//		};
-//		array_push(_callstack, _callstack_top);
-//	}
-//	
-//	static _callstack_pop = function() {
-//		if (array_length(_callstack) <= 1) return false;
-//		array_pop(_callstack);
-//		_callstack_top = array_last(_callstack);
-//		return true;
-//	}
-//	
-//	static _callstack_return_to_index = function(_index) {
-//		var _size = _index + 1;
-//		if (_size >= array_length(_callstack)) return;
-//		array_resize(_callstack, _size);
-//		_callstack_top = array_last(_callstack);
-//	}
-//	#endregion
-//}
 #endregion
 
 #endregion

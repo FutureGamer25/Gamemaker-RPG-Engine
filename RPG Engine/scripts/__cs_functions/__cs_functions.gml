@@ -6,7 +6,7 @@ function cs_test_method(_parameter) {
 }
 
 #region basic
-function cs_call_ext(_function, _array_args) {
+function cs_func_ext(_function, _array_args) {
 	static _method = function(_parameters) {
 		with (_parameters[0]) script_execute_ext(_parameters[1], _parameters[2]);
 	}
@@ -19,13 +19,13 @@ function cs_call_ext(_function, _array_args) {
 	cutscene_add_event_method(_method, _parameters);
 }
 
-function cs_call(_function, _arg0 = undefined) {
+function cs_func(_function, _arg0 = undefined) {
 	if (argument_count > 2) {
 		var _array_args = array_create(argument_count - 1);
 		for (var _i = 1; _i < argument_count; _i++) {
 			_array_args[_i - 1] = argument[_i];
 		}
-		cs_call_ext(_function, _array_args);
+		cs_func_ext(_function, _array_args);
 		return;
 	}
 	if (!is_method(_function)) _function = method(self, _function);
@@ -38,9 +38,23 @@ function cs_label(_label_name) {
 
 function cs_goto_label(_label_name) {
 	static _method = function(_label_name) {
-		cutscene_goto_label(cutscene_get_current(), _label_name);
+		cutscene_branch_goto_label(cutscene_get_current(), cutscene_branch_current, _label_name);
 	}
 	cutscene_add_event_method(_method, _label_name);
+}
+
+function cs_stop() {
+	static _method = function() {
+		cutscene_branch_stop(cutscene_get_current(), cutscene_branch_current);
+	}
+	cutscene_add_event_method(_method);
+}
+
+function cs_time_units(_time_units) {
+	static _method = function(_time_units) {
+		cutscene_branch_time_units(cutscene_get_current(), cutscene_branch_current, _time_units);
+	}
+	cutscene_add_event_method(_method, _time_units);
 }
 #endregion
 
@@ -55,7 +69,7 @@ function cs_branch_begin_child(_parent_branch, _branch_name = "") {
 	}
 	var _template = cutscene_template_create();
 	cutscene_add_event_method(_method, [_template, _parent_branch, _branch_name]);
-	cutscene_template_append_begin(_template);
+	cutscene_template_begin(_template);
 }
 
 function cs_branch_end() {
@@ -65,7 +79,6 @@ function cs_branch_end() {
 
 function cs_wait(_time) {
 	static _class = function(_cutscene, _time) constructor {
-		self._cutscene = _cutscene;
 		_time_max = _time;
 		self._time = 0;
 		
@@ -73,7 +86,7 @@ function cs_wait(_time) {
 		
 		static _step = function(_dt) {
 			_time += _dt;
-			if (_time >= _time_max) cutscene_next(_cutscene, _time - _time_max);
+			if (_time >= _time_max) cutscene_event_next(_time - _time_max);
 		}
 	}
 	
@@ -89,7 +102,6 @@ function cs_obj_move(_object, _x, _y, _time) {
 	}
 	
 	static _class = function(_cutscene, _parameters) constructor {
-		self._cutscene = _cutscene;
 		_object = _parameters._object;
 		_x1 = _object.x;
 		_y1 = _object.y;
@@ -106,7 +118,7 @@ function cs_obj_move(_object, _x, _y, _time) {
 			_object.x = lerp(_x1, _x2, _amount);
 			_object.y = lerp(_y1, _y2, _amount);
 			
-			if (_time >= _time_max) cutscene_next(_cutscene, _time - _time_max);
+			if (_time >= _time_max) cutscene_event_next(_time - _time_max);
 		}
 	}
 	
