@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"lerp_type",
+  "%Name":"__anime_functions",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"lerp_type",
+  "name":"__anime_functions",
   "parent":{
     "name":"Anime",
     "path":"folders/RPG Engine/Systems/Cutscenes/Anime.yy",

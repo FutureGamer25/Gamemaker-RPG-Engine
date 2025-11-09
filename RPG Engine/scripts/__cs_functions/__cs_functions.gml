@@ -8,14 +8,10 @@ function cs_test_method(_parameter) {
 #region basic
 function cs_func_ext(_function, _array_args) {
 	static _method = function(_parameters) {
-		with (_parameters[0]) script_execute_ext(_parameters[1], _parameters[2]);
+		method_call(_parameters[0], _parameters[1]);
 	}
-	var _self = self;
-	if (is_method(_function)) {
-		_self = method_get_self(_function);
-		_function = method_get_index(_function);
-	}
-	var _parameters = [_self, _function, _array_args];
+	if (!is_method(_function)) _function = method(self, _function);
+	var _parameters = [_function, _array_args];
 	cutscene_add_event_method(_method, _parameters);
 }
 
@@ -74,6 +70,16 @@ function cs_branch_begin_child(_parent_branch, _branch_name = "") {
 
 function cs_branch_end() {
 	cutscene_template_end();
+}
+#endregion
+
+#region anime
+function cs_anime_begin() {
+	
+}
+
+function cs_anime_end() {
+	
 }
 #endregion
 

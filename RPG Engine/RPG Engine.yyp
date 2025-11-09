@@ -34,9 +34,8 @@
     {"$GMFolder":"","%Name":"RPG Engine","folderPath":"folders/RPG Engine.yy","name":"RPG Engine","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Functions","folderPath":"folders/RPG Engine/Functions.yy","name":"Functions","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Systems","folderPath":"folders/RPG Engine/Systems.yy","name":"Systems","resourceType":"GMFolder","resourceVersion":"2.0",},
-    {"$GMFolder":"","%Name":"Animation","folderPath":"folders/RPG Engine/Systems/Animation.yy","name":"Animation","resourceType":"GMFolder","resourceVersion":"2.0",},
-    {"$GMFolder":"","%Name":"Anime","folderPath":"folders/RPG Engine/Systems/Animation/Anime.yy","name":"Anime","resourceType":"GMFolder","resourceVersion":"2.0",},
-    {"$GMFolder":"","%Name":"Cutscenes","folderPath":"folders/RPG Engine/Systems/Animation/Cutscenes.yy","name":"Cutscenes","resourceType":"GMFolder","resourceVersion":"2.0",},
+    {"$GMFolder":"","%Name":"Cutscenes","folderPath":"folders/RPG Engine/Systems/Cutscenes.yy","name":"Cutscenes","resourceType":"GMFolder","resourceVersion":"2.0",},
+    {"$GMFolder":"","%Name":"Anime","folderPath":"folders/RPG Engine/Systems/Cutscenes/Anime.yy","name":"Anime","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Depth Sorting","folderPath":"folders/RPG Engine/Systems/Depth Sorting.yy","name":"Depth Sorting","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Text","folderPath":"folders/RPG Engine/Systems/Text.yy","name":"Text","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Scripts","folderPath":"folders/Scripts.yy","name":"Scripts","resourceType":"GMFolder","resourceVersion":"2.0",},
@@ -53,7 +52,7 @@
   "isEcma":false,
   "LibraryEmitters":[],
   "MetaData":{
-    "IDEVersion":"2024.13.1.193",
+    "IDEVersion":"2024.14.0.207",
   },
   "name":"RPG Engine",
   "resources":[
@@ -93,6 +92,7 @@
     {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},
     {"id":{"name":"Room2","path":"rooms/Room2/Room2.yy",},},
     {"id":{"name":"Room3","path":"rooms/Room3/Room3.yy",},},
+    {"id":{"name":"__anime_functions","path":"scripts/__anime_functions/__anime_functions.yy",},},
     {"id":{"name":"__cs_functions","path":"scripts/__cs_functions/__cs_functions.yy",},},
     {"id":{"name":"__cutscene_functions","path":"scripts/__cutscene_functions/__cutscene_functions.yy",},},
     {"id":{"name":"depth_sort_set_layer","path":"scripts/depth_sort_set_layer/depth_sort_set_layer.yy",},},

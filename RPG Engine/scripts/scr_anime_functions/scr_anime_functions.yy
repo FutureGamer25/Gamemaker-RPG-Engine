@@ -6,7 +6,7 @@
   "name":"scr_anime_functions",
   "parent":{
     "name":"Anime",
-    "path":"folders/RPG Engine/Systems/Animation/Anime.yy",
+    "path":"folders/RPG Engine/Systems/Cutscenes/Anime.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

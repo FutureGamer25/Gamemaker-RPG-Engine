@@ -156,10 +156,6 @@ function cutscene_add_label(_label_name) {
 }
 #endregion
 
-
-
-#region internal
-
 #region macros
 #macro cutscene_branch_root "__root__"
 #macro cutscene_branch_current "__current__"
@@ -173,6 +169,10 @@ function cutscene_add_label(_label_name) {
 #macro cutscene_state_paused 2
 #macro cutscene_state_stopped 3
 #endregion
+
+
+
+#region internal
 
 function __cutscene_global() {
 	static _class = function() constructor {
@@ -205,23 +205,23 @@ function __cutscene_global() {
 }
 
 #region templates / events
-enum __cutscene_event_type {_default, _method}
+function __cutscene_template_class() constructor {
+	_events = [];
+	_labels = {};
+}
+
+enum __CUTSCENE_EVENT_TYPE {_DEFAULT, _METHOD}
 
 function __cutscene_event_class(_runner_class, _parameter) constructor {
-	static _type = __cutscene_event_type._default;
+	static _type = __CUTSCENE_EVENT_TYPE._DEFAULT;
 	self._runner_class = _runner_class;
 	self._parameter = _parameter;
 }
 
 function __cutscene_event_method_class(_method, _parameter) constructor {
-	static _type = __cutscene_event_type._method;
+	static _type = __CUTSCENE_EVENT_TYPE._METHOD;
 	self._method = _method;
 	self._parameter = _parameter;
-}
-
-function __cutscene_template_class() constructor {
-	_events = [];
-	_labels = {};
 }
 #endregion
 
@@ -278,7 +278,7 @@ function __cutscene_branch_class(_cutscene, _template, _name = "") constructor {
 	self._name = _name;
 	_state = cutscene_state_initial;
 	_speed = 1;
-	_time_units = 1;
+	_time_units = undefined;
 	_time_remaining = 0;
 	_child_branches = [];
 	
@@ -343,7 +343,7 @@ function __cutscene_branch_class(_cutscene, _template, _name = "") constructor {
 				}
 				
 				var _event = _script._events[_event_index];
-				if (_event._type == __cutscene_event_type._method) {
+				if (_event._type == __CUTSCENE_EVENT_TYPE._METHOD) {
 					_event_index++;
 					_event._method(_event._parameter);
 				} else {
@@ -354,7 +354,7 @@ function __cutscene_branch_class(_cutscene, _template, _name = "") constructor {
 				//run event step
 				if (_dt <= 0) break;
 				
-				var _scale = is_real(_time_units) ? _time_units : _time_units();
+				var _scale = (_time_units == undefined) ? 1 : _time_units();
 				_time_remaining = 0;
 				_event_instance._step(_dt * _scale);
 				_dt = _time_remaining / _scale;
@@ -382,7 +382,7 @@ function __cutscene_branch_class(_cutscene, _template, _name = "") constructor {
 		static _seconds = function() { return 1 / game_get_speed(gamespeed_fps); }
 		static _seconds_dt = function() { return delta_time / 1_000_000; }
 		switch (_time_units) {
-			case cutscene_units_frames:     _time_units = 1;           break;
+			case cutscene_units_frames:     _time_units = undefined;   break;
 			case cutscene_units_seconds:    _time_units = _seconds;    break;
 			case cutscene_units_seconds_dt: _time_units = _seconds_dt; break;
 		}

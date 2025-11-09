@@ -67,72 +67,72 @@ function lerp_type(_val1, _val2, _amount, _ease_type) {
 		"smooth" : [2, _quad],
 		"nearest" : [0, function(_val) { return (_val >= 0.5); }],
 		"hold" : [0, function(_val) { return (_val >= 1) }],
-		 
-		"ease_in"     : [0, _quad], //duplicate of _quad
-		"ease_out"    : [1, _quad],
-		"ease_in_out" : [2, _quad],
-		"ease_out_in" : [3, _quad],
-		"ease"        : [2, _quad],
-		 
-		"quad_in"     : [0, _quad],
-		"quad_out"    : [1, _quad],
-		"quad_in_out" : [2, _quad],
-		"quad_out_in" : [3, _quad],
-		"quad"        : [2, _quad],
-		 
-		"cubic_in"     : [0, _cubic],
-		"cubic_out"    : [1, _cubic],
-		"cubic_in_out" : [2, _cubic],
-		"cubic_out_in" : [3, _cubic],
-		"cubic"        : [2, _cubic],
-		 
-		"quart_in"     : [0, _quart],
-		"quart_out"    : [1, _quart],
-		"quart_in_out" : [2, _quart],
-		"quart_out_in" : [3, _quart],
-		"quart"        : [2, _quart],
-		 
-		"quint_in"     : [0, _quint],
-		"quint_out"    : [1, _quint],
-		"quint_in_out" : [2, _quint],
-		"quint_out_in" : [3, _quint],
-		"quint"        : [2, _quint],
-		 
-		"sine_in"     : [1, _sine],
-		"sine_out"    : [0, _sine],
-		"sine_in_out" : [3, _sine],
-		"sine_out_in" : [2, _sine],
-		"sine"        : [3, _sine],
-		 
-		"expo_in"     : [0, _expo],
-		"expo_out"    : [1, _expo],
-		"expo_in_out" : [2, _expo],
-		"expo_out_in" : [3, _expo],
-		"expo"        : [2, _expo],
-		 
-		"circ_in"     : [0, _circ],
-		"circ_out"    : [1, _circ],
-		"circ_in_out" : [2, _circ],
-		"circ_out_in" : [3, _circ],
-		"circ"        : [2, _circ],
-		 
-		"back_in"     : [0, _back],
-		"back_out"    : [1, _back],
-		"back_in_out" : [2, _back],
-		"back_out_in" : [3, _back],
-		"back"        : [1, _back],
-		 
+		
+		"ease_in"        : [0, _quad], //duplicate of _quad
+		"ease_out"       : [1, _quad],
+		"ease_in_out"    : [2, _quad],
+		"ease_out_in"    : [3, _quad],
+		"ease"           : [2, _quad],
+		
+		"quad_in"        : [0, _quad],
+		"quad_out"       : [1, _quad],
+		"quad_in_out"    : [2, _quad],
+		"quad_out_in"    : [3, _quad],
+		"quad"           : [2, _quad],
+		
+		"cubic_in"       : [0, _cubic],
+		"cubic_out"      : [1, _cubic],
+		"cubic_in_out"   : [2, _cubic],
+		"cubic_out_in"   : [3, _cubic],
+		"cubic"          : [2, _cubic],
+		
+		"quart_in"       : [0, _quart],
+		"quart_out"      : [1, _quart],
+		"quart_in_out"   : [2, _quart],
+		"quart_out_in"   : [3, _quart],
+		"quart"          : [2, _quart],
+		
+		"quint_in"       : [0, _quint],
+		"quint_out"      : [1, _quint],
+		"quint_in_out"   : [2, _quint],
+		"quint_out_in"   : [3, _quint],
+		"quint"          : [2, _quint],
+		
+		"sine_in"        : [1, _sine],
+		"sine_out"       : [0, _sine],
+		"sine_in_out"    : [3, _sine],
+		"sine_out_in"    : [2, _sine],
+		"sine"           : [3, _sine],
+		
+		"expo_in"        : [0, _expo],
+		"expo_out"       : [1, _expo],
+		"expo_in_out"    : [2, _expo],
+		"expo_out_in"    : [3, _expo],
+		"expo"           : [2, _expo],
+		
+		"circ_in"        : [0, _circ],
+		"circ_out"       : [1, _circ],
+		"circ_in_out"    : [2, _circ],
+		"circ_out_in"    : [3, _circ],
+		"circ"           : [2, _circ],
+		
+		"back_in"        : [0, _back],
+		"back_out"       : [1, _back],
+		"back_in_out"    : [2, _back],
+		"back_out_in"    : [3, _back],
+		"back"           : [1, _back],
+		
 		"elastic_in"     : [1, _elastic],
 		"elastic_out"    : [0, _elastic],
 		"elastic_in_out" : [3, _elastic],
 		"elastic_out_in" : [2, _elastic],
 		"elastic"        : [0, _elastic],
-		 
-		"bounce_in"     : [1, _bounce],
-		"bounce_out"    : [0, _bounce],
-		"bounce_in_out" : [3, _bounce],
-		"bounce_out_in" : [2, _bounce],
-		"bounce"        : [0, _bounce],
+		
+		"bounce_in"      : [1, _bounce],
+		"bounce_out"     : [0, _bounce],
+		"bounce_in_out"  : [3, _bounce],
+		"bounce_out_in"  : [2, _bounce],
+		"bounce"         : [0, _bounce],
 	}
 	
 	var _interp = _type[$ _ease_type] ?? _type.linear;
