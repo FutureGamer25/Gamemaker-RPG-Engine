@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"__anime_functions",
   "parent":{
-    "name":"Anime",
-    "path":"folders/RPG Engine/Systems/Cutscenes/Anime.yy",
+    "name":"Cutscenes",
+    "path":"folders/RPG Engine/Systems/Cutscenes.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

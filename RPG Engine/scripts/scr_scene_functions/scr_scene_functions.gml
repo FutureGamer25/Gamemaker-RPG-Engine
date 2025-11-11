@@ -164,7 +164,7 @@ function scene_lerp(x1, x2, frames, ease_type, callback) {
 			cutscene_event_next();
 			return;
 		}
-		callback(lerp_type(x1, x2, val, type));
+		callback(anime_curve_lerp(x1, x2, val, type));
 	}
 	
 	scene_preset([x1, x2, frames, ease_type, callback], create, step);
