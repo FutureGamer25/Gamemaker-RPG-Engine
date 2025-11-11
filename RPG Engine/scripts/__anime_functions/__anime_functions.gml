@@ -1,91 +1,183 @@
 //feather ignore GM1042
 //feather ignore GM2017
 
+#region anime instances
+
 ///@desc	Animates a value between two positions along a curve.
 ///			**NOTE:** For built-in easing curves use `anime_curve.[insert type]` or a string.
 ///			For custom curves use a function, animation curve, or animation curve channel.
 ///@param {Real} val1				The first value of the animation
 ///@param {Real} val2				The last value of the animation
 ///@param {Real} time				The duration in frames
-///@param {Real|Function|Struct|Asset.GMAnimCurve} easing_curve
+///@param {String|Real|Function|Asset.GMAnimCurve|Struct} easing_curve
 ///									The easing curve
-///@param {Function} call_method	The method to call for each frame of animation
+///@param {Function} [call_method]	The method to call each frame (defaults to undefined)
 ///@return {Struct.__anime_class}
-function anime_run(_val1, _val2, _time, _easing_curve, _call_method) {
-	var _anime = new __anime_class(_val1, _call_method);
+function anime_do(_val1, _val2, _time, _easing_curve, _call_method = undefined) {
+	var _anime = new __anime_class(_val1, false, 1, _call_method);
 	_anime._add(_val2, _time, _easing_curve);
 	return _anime;
 }
 
+///@desc	Begins a new animation. Use `anime_add()` to define positions then `anime_end()` to finish.
+///			**NOTE:** The animation will start automatically, use `anime_begin_ext()` to prevent.
+///@param {Real} val				The first value of the animation
+///@param {Function} [call_method]	The method to call each frame (defaults to undefined)
+///@return {Struct.__anime_class}
 function anime_begin(_val, _call_method = undefined) {
 	static _global = __anime_global();
-	var _anime = new __anime_class(_val, _call_method);
+	var _anime = new __anime_class(_val, false, 1, _call_method);
 	_global._anime_current = _anime;
 	_anime._start();
 	return _anime;
 }
 
-function anime_begin_ext(_val, _speed, _loop, _disable_start = false, _call_method = undefined) {
+///@desc	Begins a new animation. Use `anime_add()` to define positions then `anime_end()` to finish.
+///@param {Real} val				The first value of the animation
+///@param {Bool} [auto_start]		Whether to start the animation automatically (defaults to true)
+///@param {Real} [loop]				Whether to loop (defaults to false)
+///@param {Real} [speed]			The speed multiplier (defaults to 1)
+///@param {Function} [call_method]	The method to call each frame (defaults to undefined)
+///@return {Struct.__anime_class}
+function anime_begin_ext(_val, _auto_start = true, _loop = false, _speed = 1, _call_method = undefined) {
 	static _global = __anime_global();
-	var _anime = new __anime_class(_val, _call_method);
+	var _anime = new __anime_class(_val, _loop, _speed, _call_method);
 	_global._anime_current = _anime;
-	_anime._loop(_loop);
-	if (!_disable_start) _anime._start();
+	if (_auto_start) _anime._start();
 	return _anime;
 }
 
+///@desc	Adds a new position to the current animation.
+///			**NOTE:** For built-in easing curves use `anime_curve.[insert type]` or a string.
+///			For custom curves use a function, animation curve, or animation curve channel.
+///@param {Real} val		The value to animate to
+///@param {Real} time		The duration in frames to arrive at the value
+///@param {String|Real|Function|Asset.GMAnimCurve|Struct} [easing_curve]
+///							The easing curve (defaults to `anime_curve.linear`)
 function anime_add(_val, _time, _easing_curve = anime_curve.linear) {
 	static _global = __anime_global();
 	_global._anime_current._add(_val, _time, _easing_curve);
 }
 
+///@desc	Finishes defining the animation.
 function anime_end() {
 	static _global = __anime_global();
 	_global._anime_current = undefined;
 }
 
+///@desc	Starts the animation.
+///@param {Struct.__anime_class} anime	The anime instance
 function anime_start(_anime) {
+	if (!is_struct(_anime)) return;
 	_anime._start();
 }
 
+///@desc	Stops the animation.
+///@param {Struct.__anime_class} anime	The anime instance
 function anime_stop(_anime) {
 	if (!is_struct(_anime)) return;
 	_anime._stop();
 }
 
+///@desc	Pauses the animation.
+///@param {Struct.__anime_class} anime	The anime instance
 function anime_pause(_anime) {
+	if (!is_struct(_anime)) return;
 	_anime._pause();
 }
 
+///@desc	Resumes the animation.
+///@param {Struct.__anime_class} anime	The anime instance
 function anime_resume(_anime) {
+	if (!is_struct(_anime)) return;
 	_anime._resume();
 }
 
-function anime_enable_loop(_anime, _enable = true) {
-	_anime._loop(_enable);
+///@desc	Enables or disables looping. Use `anime_stop()` to exit looping animations.
+///@param {Struct.__anime_class} anime	The anime instance
+///@param {Real} [enable]				Whether to loop (defaults to true)
+function anime_set_loop(_anime, _enable = true) {
+	if (!is_struct(_anime)) return;
+	_anime._set_loop(_enable);
 }
 
+///@desc	Sets the speed multiplier.
+///@param {Struct.__anime_class} anime	The anime instance
+///@param {Function} speed				The speed multiplier
 function anime_set_speed(_anime, _speed) {
+	if (!is_struct(_anime)) return;
 	_anime._set_speed(_speed);
 }
 
 ///@desc	Sets the callback method.
 ///@param {Struct.__anime_class} anime	The anime instance
-///@param {Function} call_method		The method to call for each frame of animation
+///@param {Function} call_method		The method to call each frame
 function anime_set_method(_anime, _call_method) {
+	if (!is_struct(_anime)) return;
 	_anime._set_method(_call_method);
 }
 
-function anime_skip(_anime, _time) {
-	
+///@desc	Sets the current position of the animation.
+///@param {Struct.__anime_class} anime	The anime instance
+///@param {Function} time				The position in frames
+function anime_set_position(_anime, _time) {
+	if (!is_struct(_anime)) return;
+	_anime._set_position(_time);
 }
 
+///@desc	Gets the current position of the animation in frames.
+///@param {Struct.__anime_class} anime	The anime instance
+///@return {Real}
+function anime_get_position(_anime) {
+	if (!is_struct(_anime)) return;
+	return _anime._get_position();
+}
+
+///@desc	Gets the current value of the animation.
+///@param {Struct.__anime_class} anime	The anime instance
+///@return {Real}
 function anime_get_value(_anime) {
-	
+	if (!is_struct(_anime)) return;
+	return _anime._get_value();
 }
 
+///@desc	Gets the length of the animation in frames.
+///@param {Struct.__anime_class} anime	The anime instance
+///@return {Real}
+function anime_get_length(_anime) {
+	if (!is_struct(_anime)) return;
+	return _anime._get_length();
+}
+
+///@desc	Manually increments the animation and calls the callback method.
+///			This function works even if the animation is paused or stopped.
+///@param {Struct.__anime_class} anime	The anime instance
+///@param {Real} frames					The number of frames to increment the animation (defaults to 1)
+///@return {Real}
+function anime_step(_anime, _frames = 1) {
+	_anime._step(_frames);
+}
+
+///@desc	Returns a duplicate of the animation. Useful for running multiple of the same animation.
+///@param {Struct.__anime_class} anime	The anime instance to clone
+///@return {Struct.__anime_class}
 function anime_clone(_anime) {
+	if (!is_struct(_anime)) return _anime;
 	return _anime._clone();
+}
+
+#endregion
+
+#region easing curves
+
+///@desc	Assign a name to a custom easing curve.
+///@param {String} name			The name of the easing curve
+///@param {Function|Asset.GMAnimCurve|Struct} function_or_animcurve
+///								The function, animation curve, or animation curve channel
+///@param {Real} [curve_dir]	The direction of the curve (defaults to `anime_curve_dir.normal`)
+function anime_curve_add_custom(_name, _function_or_animcurve, _direction = anime_curve_dir.normal) {
+	static _curve_struct = __anime_global()._curve_struct;
+	_curve_struct[$ _name] = [_function_or_animcurve, _direction];
 }
 
 ///@desc	Interpolate two values with an easing curve.
@@ -94,56 +186,82 @@ function anime_clone(_anime) {
 ///@param {Real} val1				The first value
 ///@param {Real} val2				The second value
 ///@param {Real} amount				The amount to interpolate
-///@param {Real|String|Function|Struct|Asset.GMAnimCurve} easing_curve
-//@param {Real|String|Struct} easing_curve
+///@param {String|Real|Function|Asset.GMAnimCurve|Struct} easing_curve
 ///									The easing curve
 ///@param {Real} [curve_dir]		The direction of the curve (only for custom curves)
 ///@return {Real}
 function anime_curve_lerp(_val1, _val2, _amount, _easing_curve, _curve_dir = anime_curve_dir.normal) {
 	static _curve_array = __anime_global()._curve_array;
 	static _curve_struct = __anime_global()._curve_struct;
-	//static _error = __anime_global()._error;
 	
-	static _animcurve_channel = undefined;
-	static _animcurve_method = function(_amount) {
-		return animcurve_channel_evaluate(_animcurve_channel, _amount);
+	static _animcurve_method = function(_amount, _channel) {
+		return animcurve_channel_evaluate(_channel, _amount);
 	}
 	
-	if is_real(_easing_curve) { //built-in curve
+	_amount = clamp(_amount, 0, 1);
+	var _channel = undefined;
+	
+	//built-in curves
+	if is_numeric(_easing_curve) {
 		var _curve = _curve_array[_easing_curve];
 		_easing_curve = _curve[0];
 		_curve_dir = _curve[1];
-	} else if is_string(_easing_curve) { //custom curve
+	} else if is_string(_easing_curve) {
 		var _curve = _curve_struct[$ _easing_curve];
 		_easing_curve = _curve[0];
 		_curve_dir = _curve[1];
-	} else if is_callable(_easing_curve) { //function
-		if (!is_method(_easing_curve)) _easing_curve = method(self, _easing_curve);
-	} else { //animcurve channel
+	}
+	
+	//animcurve channel
+	if (!is_callable(_easing_curve)) {
 		if animcurve_exists(_easing_curve) {
-			//if is_handle(_easing_curve) _easing_curve = animcurve_get(_easing_curve);
-			//if (array_length(_easing_curve.channels) <= 0) _error("Animation curves must have at least one channel.");
 			_easing_curve = animcurve_get_channel(_easing_curve, 0);
 		}
-		_animcurve_channel = _easing_curve;
+		_channel = _easing_curve;
 		_easing_curve = _animcurve_method;
 	}
 	
 	switch (_curve_dir) {
-		default: //normal
-			return (_val2 - _val1) * _easing_curve(_amount) + _val1;
-		case anime_curve_dir.reverse: //reverse
-			return (_val1 - _val2) * _easing_curve(1 - _amount) + _val2;
-		case anime_curve_dir.alternate: //normal-reverse
-			_amount = 2 * _amount - 1;
-			var _s1 = sign(_amount);
-			return (_val2 - _val1) * (0.5 * (1 - _easing_curve(1 - _s1 * _amount)) * _s1 + 0.5) + _val1;
-		case anime_curve_dir.alt_reverse: //reverse-normal
-			_amount = 2 * _amount - 1;
-			var _s2 = sign(_amount);
-			return (_val2 - _val1) * (0.5 * _easing_curve(_s2 * _amount) * _s2 + 0.5) + _val1;
+	default: //normal
+		return (_val2 - _val1) * _easing_curve(_amount, _channel) + _val1;
+	case anime_curve_dir.reverse: //reverse
+		return (_val1 - _val2) * _easing_curve(1 - _amount, _channel) + _val2;
+	case anime_curve_dir.alternate: //normal-reverse
+		_amount = 2 * _amount - 1;
+		var _s1 = sign(_amount);
+		return (_val2 - _val1) * (0.5 * (1 - _easing_curve(1 - _s1 * _amount, _channel)) * _s1 + 0.5) + _val1;
+	case anime_curve_dir.alt_reverse: //reverse-normal
+		_amount = 2 * _amount - 1;
+		var _s2 = sign(_amount);
+		return (_val2 - _val1) * (0.5 * _easing_curve(_s2 * _amount, _channel) * _s2 + 0.5) + _val1;
 	}
 }
+
+///@ignore
+//function __anime_curve_get_errors(_easing_curve) {
+//	static _curve_array = __anime_global()._curve_array;
+//	static _curve_struct = __anime_global()._curve_struct;
+//	
+//	if is_numeric(_easing_curve) { //built-in curve
+//		if (_easing_curve < 0 || _easing_curve > array_length(_curve_array) - 1) return "Easing curve index does not exist.";
+//		//if (_curve_array[_easing_curve] == undefined) return "Easing curve index does not exist.";
+//		return undefined;
+//	} else if is_string(_easing_curve) { //custom curve
+//		if (_curve_struct[$ _easing_curve] == undefined) return "Easing curve \"" + _easing_curve + "\" does not exist.";
+//		return undefined;
+//	} else if is_callable(_easing_curve) { //function
+//		return undefined;
+//	} else if (is_handle(_easing_curve) || is_struct(_easing_curve)) { //animcurve channel
+//		if animcurve_exists(_easing_curve) {
+//			if is_handle(_easing_curve) _easing_curve = animcurve_get(_easing_curve);
+//			if (array_length(_easing_curve.channels) <= 0) return "Animation curves must have at least one channel.";
+//		}
+//		return undefined;
+//	}
+//	return "Easing curve cannot be of type \"" + typeof(_easing_curve) + "\".";
+//}
+
+#endregion
 
 #region macros / enums
 
@@ -189,11 +307,6 @@ enum anime_curve {
 ///@ignore
 function __anime_global() {
 	static _class = function() constructor {
-		//_error = function(_message) {
-		//	var _output = "ANIME: " + _message;
-		//	show_message(_output);
-		//	throw(_output);
-		//}
 		_anime_current = undefined;
 		_curve_array = [];
 		_curve_struct = {};
@@ -238,45 +351,231 @@ function __anime_global() {
 		#endregion
 		
 		#region register curves
-		var _register = function(_index, _method, _direction) {
-			_curve_array[_index] = [_method, _direction];
+		var _register = function(_index, _name, _method, _direction) {
+			var _curve = [_method, _direction];
+			_curve_array[_index] = _curve;
+			_curve_struct[$ _name] = _curve;
 		}
-		_register(anime_curve.linear,         _linear,  anime_curve_dir.normal     );
-		_register(anime_curve.hold,           _hold,    anime_curve_dir.normal     );
-		_register(anime_curve.quad_in,        _quad,    anime_curve_dir.normal     );
-		_register(anime_curve.quad_out,       _quad,    anime_curve_dir.reverse    );
-		_register(anime_curve.quad_in_out,    _quad,    anime_curve_dir.alternate  );
-		_register(anime_curve.cubic_in,       _cubic,   anime_curve_dir.normal     );
-		_register(anime_curve.cubic_out,      _cubic,   anime_curve_dir.reverse    );
-		_register(anime_curve.cubic_in_out,   _cubic,   anime_curve_dir.alternate  );
-		_register(anime_curve.quart_in,       _quart,   anime_curve_dir.normal     );
-		_register(anime_curve.quart_out,      _quart,   anime_curve_dir.reverse    );
-		_register(anime_curve.quart_in_out,   _quart,   anime_curve_dir.alternate  );
-		_register(anime_curve.quint_in,       _quint,   anime_curve_dir.normal     );
-		_register(anime_curve.quint_out,      _quint,   anime_curve_dir.reverse    );
-		_register(anime_curve.quint_in_out,   _quint,   anime_curve_dir.alternate  );
-		_register(anime_curve.expo_in,        _expo,    anime_curve_dir.normal     );
-		_register(anime_curve.expo_out,       _expo,    anime_curve_dir.reverse    );
-		_register(anime_curve.expo_in_out,    _expo,    anime_curve_dir.alternate  );
-		_register(anime_curve.sine_in,        _sine,    anime_curve_dir.reverse    );
-		_register(anime_curve.sine_out,       _sine,    anime_curve_dir.normal     );
-		_register(anime_curve.sine_in_out,    _sine,    anime_curve_dir.alt_reverse);
-		_register(anime_curve.circ_in,        _circ,    anime_curve_dir.normal     );
-		_register(anime_curve.circ_out,       _circ,    anime_curve_dir.reverse    );
-		_register(anime_curve.circ_in_out,    _circ,    anime_curve_dir.alternate  );
-		_register(anime_curve.back_in,        _back,    anime_curve_dir.normal     );
-		_register(anime_curve.back_out,       _back,    anime_curve_dir.reverse    );
-		_register(anime_curve.back_in_out,    _back,    anime_curve_dir.alternate  );
-		_register(anime_curve.elastic_in,     _elastic, anime_curve_dir.reverse    );
-		_register(anime_curve.elastic_out,    _elastic, anime_curve_dir.normal     );
-		_register(anime_curve.elastic_in_out, _elastic, anime_curve_dir.alt_reverse);
-		_register(anime_curve.bounce_in,      _bounce,  anime_curve_dir.reverse    );
-		_register(anime_curve.bounce_out,     _bounce,  anime_curve_dir.normal     );
-		_register(anime_curve.bounce_in_out,  _bounce,  anime_curve_dir.alt_reverse);
+		_register(anime_curve.linear,         "linear",         _linear,  anime_curve_dir.normal     );
+		_register(anime_curve.hold,           "hold",           _hold,    anime_curve_dir.normal     );
+		_register(anime_curve.quad_in,        "quad_in",        _quad,    anime_curve_dir.normal     );
+		_register(anime_curve.quad_out,       "quad_out",       _quad,    anime_curve_dir.reverse    );
+		_register(anime_curve.quad_in_out,    "quad_in_out",    _quad,    anime_curve_dir.alternate  );
+		_register(anime_curve.cubic_in,       "cubic_in",       _cubic,   anime_curve_dir.normal     );
+		_register(anime_curve.cubic_out,      "cubic_out",      _cubic,   anime_curve_dir.reverse    );
+		_register(anime_curve.cubic_in_out,   "cubic_in_out",   _cubic,   anime_curve_dir.alternate  );
+		_register(anime_curve.quart_in,       "quart_in",       _quart,   anime_curve_dir.normal     );
+		_register(anime_curve.quart_out,      "quart_out",      _quart,   anime_curve_dir.reverse    );
+		_register(anime_curve.quart_in_out,   "quart_in_out",   _quart,   anime_curve_dir.alternate  );
+		_register(anime_curve.quint_in,       "quint_in",       _quint,   anime_curve_dir.normal     );
+		_register(anime_curve.quint_out,      "quint_out",      _quint,   anime_curve_dir.reverse    );
+		_register(anime_curve.quint_in_out,   "quint_in_out",   _quint,   anime_curve_dir.alternate  );
+		_register(anime_curve.expo_in,        "expo_in",        _expo,    anime_curve_dir.normal     );
+		_register(anime_curve.expo_out,       "expo_out",       _expo,    anime_curve_dir.reverse    );
+		_register(anime_curve.expo_in_out,    "expo_in_out",    _expo,    anime_curve_dir.alternate  );
+		_register(anime_curve.sine_in,        "sine_in",        _sine,    anime_curve_dir.reverse    );
+		_register(anime_curve.sine_out,       "sine_out",       _sine,    anime_curve_dir.normal     );
+		_register(anime_curve.sine_in_out,    "sine_in_out",    _sine,    anime_curve_dir.alt_reverse);
+		_register(anime_curve.circ_in,        "circ_in",        _circ,    anime_curve_dir.normal     );
+		_register(anime_curve.circ_out,       "circ_out",       _circ,    anime_curve_dir.reverse    );
+		_register(anime_curve.circ_in_out,    "circ_in_out",    _circ,    anime_curve_dir.alternate  );
+		_register(anime_curve.back_in,        "back_in",        _back,    anime_curve_dir.normal     );
+		_register(anime_curve.back_out,       "back_out",       _back,    anime_curve_dir.reverse    );
+		_register(anime_curve.back_in_out,    "back_in_out",    _back,    anime_curve_dir.alternate  );
+		_register(anime_curve.elastic_in,     "elastic_in",     _elastic, anime_curve_dir.reverse    );
+		_register(anime_curve.elastic_out,    "elastic_out",    _elastic, anime_curve_dir.normal     );
+		_register(anime_curve.elastic_in_out, "elastic_in_out", _elastic, anime_curve_dir.alt_reverse);
+		_register(anime_curve.bounce_in,      "bounce_in",      _bounce,  anime_curve_dir.reverse    );
+		_register(anime_curve.bounce_out,     "bounce_out",     _bounce,  anime_curve_dir.normal     );
+		_register(anime_curve.bounce_in_out,  "bounce_in_out",  _bounce,  anime_curve_dir.alt_reverse);
 		#endregion
 	}
 	static _global = new _class();
 	return _global;
+}
+
+///@ignore
+function __anime_class(_def_val, _def_loop = false, _def_speed = 1, _def_method = undefined, _def_positions = undefined) constructor {
+	///@ignore
+	//static _error = function(_message) {
+	//	var _output = "ANIME: " + _message;
+	//	show_message(_output);
+	//	throw _output;
+	//}
+	
+	///@ignore
+	static _add = function(_val, _time, _easing_curve) {
+		//if (_time < 0) _error("Time cannot be less than 0.");
+		//var _message = __anime_curve_get_errors(_easing_curve);
+		//if (_message != undefined) _error(_message);
+		
+		_length += _time;
+		array_push(_positions, {
+			_val: _val,
+			_end_time: _length,
+			_easing_curve: _easing_curve
+		});
+	}
+	
+	///@ignore
+	static _start = function() {
+		var _val = _positions[0]._val;
+		_index = 0;
+		_val1 = _val;
+		_val2 = _val;
+		_start_time = 0;
+		_end_time = 0;
+		_easing_curve = 0;
+		
+		_state = anime_state_active;
+		_time = 0;
+		_current_val = _val1;
+		_time_source ??= call_later(1, time_source_units_frames, method(self, _step), true);
+	}
+	
+	///@ignore
+	static _stop = function() {
+		_state = anime_state_stopped;
+		if (_time_source != undefined) {
+			call_cancel(_time_source);
+			_time_source = undefined;
+		}
+	}
+	
+	///@ignore
+	static _pause = function() {
+		if (_state != anime_state_active) return;
+		_state = anime_state_paused;
+		if (_time_source != undefined) {
+			call_cancel(_time_source);
+			_time_source = undefined;
+		}
+	}
+	
+	///@ignore
+	static _resume = function() {
+		if (_state != anime_state_paused) return;
+		_state = anime_state_active;
+		_time_source ??= call_later(1, time_source_units_frames, method(self, _step), true);
+	}
+	
+	///@ignore
+	static _set_loop = function(_enable) {
+		_loop = _enable;
+	}
+	
+	///@ignore
+	static _set_speed = function(_speed) {
+		self._speed = _speed;
+	}
+	
+	///@ignore
+	static _set_method = function(_call_method) {
+		self._call_method = _call_method;
+	}
+	
+	///@ignore
+	static _set_position = function(_new_time) {
+		_time = _new_time;
+		
+		if (_length <= 0) {
+			_time = 0;
+			_current_val = array_last(_positions)._val;
+			return;
+		}
+		
+		while (_time >= _end_time) { //next position
+			_index++;
+			if (_index >= array_length(_positions)) {
+				if (_loop) {
+					_index = 0;
+					_time = (_time - _length) % _length;
+					_end_time = 0;
+				} else {
+					_time = _end_time;
+					_stop();
+					break;
+				}
+			}
+			_val1 = _val2;
+			_start_time = _end_time;
+			var _position = _positions[_index];
+			_val2 = _position._val;
+			_end_time = _position._end_time;
+			_easing_curve = _position._easing_curve;
+		}
+		
+		while (_time < _start_time) { //previous position
+			_index--;
+			if (_index <= 0) {
+				if (_loop) {
+					_index = array_length(_positions) - 1;
+					_time = _time % _length + _length;
+					var _position = _positions[_index];
+					_val1 = _position._val;
+					_start_time = _position._end_time;
+				} else {
+					_time = _start_time;
+					_stop();
+					break;
+				}
+			}
+			_val2 = _val1;
+			_end_time = _start_time;
+			var _prev_pos = _positions[_index - 1];
+			_val1 = _prev_pos._val;
+			_start_time = _prev_pos._end_time;
+			_easing_curve = _prev_pos._easing_curve;
+		}
+		
+		var _amount = (_end_time > _start_time) ? ((_time - _start_time) / (_end_time - _start_time)) : 1;
+		_current_val = anime_curve_lerp(_val1, _val2, _amount, _easing_curve);
+	}
+	
+	///@ignore
+	static _get_position = function() {
+		return _time;
+	}
+	
+	///@ignore
+	static _get_value = function() {
+		return _current_val;
+	}
+	
+	///@ignore
+	static _get_length = function() {
+		return _length;
+	}
+	
+	///@ignore
+	static _clone = function() {
+		return new __anime_class(0, _loop, _speed, _call_method, _positions);
+	}
+	
+	///@ignore
+	static _step = function(_frames = 1) {
+		_set_position(_time + _frames * _speed);
+		if (is_method(_call_method)) _call_method(_current_val);
+	}
+	
+	/**@ignore*/ _loop = _def_loop;
+	/**@ignore*/ _speed = _def_speed;
+	/**@ignore*/ _call_method = _def_method;
+	/**@ignore*/ _positions = _def_positions ?? [{_val: _def_val, _end_time: 0, _easing_curve: 0}];
+	/**@ignore*/ _length = array_last(_positions)._end_time;
+	
+	var _val = _positions[0]._val;
+	/**@ignore*/ _index = 0;
+	/**@ignore*/ _val1 = _val;
+	/**@ignore*/ _val2 = _val;
+	/**@ignore*/ _start_time = 0;
+	/**@ignore*/ _end_time = 0;
+	/**@ignore*/ _easing_curve = 0;
+	
+	/**@ignore*/ _state = anime_state_initial;
+	/**@ignore*/ _time = 0;
+	/**@ignore*/ _current_val = _val1;
+	/**@ignore*/ _time_source = undefined;
 }
 
 #endregion

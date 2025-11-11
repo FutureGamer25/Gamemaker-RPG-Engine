@@ -106,7 +106,6 @@
     {"id":{"name":"modulo","path":"scripts/modulo/modulo.yy",},},
     {"id":{"name":"print","path":"scripts/print/print.yy",},},
     {"id":{"name":"room_fade","path":"scripts/room_fade/room_fade.yy",},},
-    {"id":{"name":"scr_anime_functions","path":"scripts/scr_anime_functions/scr_anime_functions.yy",},},
     {"id":{"name":"scr_camera_functions","path":"scripts/scr_camera_functions/scr_camera_functions.yy",},},
     {"id":{"name":"scr_char_sprite_functions","path":"scripts/scr_char_sprite_functions/scr_char_sprite_functions.yy",},},
     {"id":{"name":"scr_dialog_functions","path":"scripts/scr_dialog_functions/scr_dialog_functions.yy",},},
