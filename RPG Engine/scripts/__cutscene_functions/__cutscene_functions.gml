@@ -226,12 +226,12 @@ function __cutscene_event_method_class(_method, _parameter) constructor {
 #endregion
 
 #region cutscenes
-function __cutscene_class(_template) constructor {
+function __cutscene_class(_template) : __cutscene_branch_class(undefined, _template, cutscene_branch_root) constructor {
 	static _global = __cutscene_global();
-	self._template = _template;
-	_branch_root = new __cutscene_branch_class(self, _template, cutscene_branch_root);
+	//self._template = _template;
+	//_branch_root = new __cutscene_branch_class(self, _template, cutscene_branch_root);
 	_branch_names = {cutscene_branch_root: _branch_root, cutscene_branch_current: 0};
-	_branch_current = _branch_root;
+	//_branch_current = _branch_root;
 	_time_source = undefined;
 	
 	static _start = function() {
@@ -248,15 +248,15 @@ function __cutscene_class(_template) constructor {
 		}
 	}
 	
-	static _stop = function() { _branch_root._stop(); }
-	
-	static _pause = function() { _branch_root._pause(); }
-	
-	static _resume = function() { _branch_root._resume(); }
-	
-	static _set_speed = function(_speed) { _branch_root._speed = _speed; }
-	
-	static _get_speed = function() { return _branch_root._speed; }
+	//static _stop = function() { _branch_root._stop(); }
+	//
+	//static _pause = function() { _branch_root._pause(); }
+	//
+	//static _resume = function() { _branch_root._resume(); }
+	//
+	//static _set_speed = function(_speed) { _branch_root._speed = _speed; }
+	//
+	//static _get_speed = function() { return _branch_root._speed; }
 	
 	static _step = function(_dt) {
 		var _previous_cutscene = _global._cutscene_current;
@@ -318,6 +318,10 @@ function __cutscene_branch_class(_cutscene, _template, _name = "") constructor {
 		if (_state != cutscene_state_paused) return;
 		_state = cutscene_state_active;
 	}
+	
+	static _set_speed = function(_speed) { self._speed = _speed; }
+	
+	static _get_speed = function() { return _speed; }
 	
 	static _step = function(_dt) {
 		if (_state != cutscene_state_active) return (_state == cutscene_state_stopped);

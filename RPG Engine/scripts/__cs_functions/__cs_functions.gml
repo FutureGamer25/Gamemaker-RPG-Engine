@@ -84,7 +84,7 @@ function cs_anime_end() {
 #endregion
 
 function cs_wait(_time) {
-	static _class = function(_cutscene, _time) constructor {
+	static _class = function(_time) constructor {
 		_time_max = _time;
 		self._time = 0;
 		
@@ -107,7 +107,7 @@ function cs_obj_move(_object, _x, _y, _time) {
 		_object.y = _parameters._y;
 	}
 	
-	static _class = function(_cutscene, _parameters) constructor {
+	static _class = function(_parameters) constructor {
 		_object = _parameters._object;
 		_x1 = _object.x;
 		_y1 = _object.y;

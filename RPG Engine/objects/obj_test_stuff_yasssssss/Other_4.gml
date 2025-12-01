@@ -1,5 +1,5 @@
 #region cutscene testing
-
+/*
 //define cutscene
 cutscene = cutscene_begin();
 
@@ -46,7 +46,7 @@ cs_wait(10);
 cs_goto_label("label");
 
 cutscene_end();
-
+*/
 #endregion
 
 
