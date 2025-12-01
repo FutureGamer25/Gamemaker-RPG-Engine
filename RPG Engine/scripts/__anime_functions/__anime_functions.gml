@@ -62,6 +62,7 @@ function anime_add(_val, _time, _easing_curve = anime_curve.linear) {
 ///@desc	Finishes defining the animation.
 function anime_end() {
 	static _global = __anime_global();
+	_global._anime_current._end();
 	_global._anime_current = undefined;
 }
 
@@ -117,20 +118,20 @@ function anime_set_method(_anime, _call_method) {
 	_anime._set_method(_call_method);
 }
 
-///@desc	Sets the current position of the animation.
+///@desc	Sets the current position of the animation in frames.
 ///@param {Struct.__anime_class} anime	The anime instance
 ///@param {Function} time				The position in frames
-function anime_set_position(_anime, _time) {
+function anime_set_time(_anime, _time) {
 	if (!is_struct(_anime)) return;
-	_anime._set_position(_time);
+	_anime._set_time(_time);
 }
 
 ///@desc	Gets the current position of the animation in frames.
 ///@param {Struct.__anime_class} anime	The anime instance
 ///@return {Real}
-function anime_get_position(_anime) {
+function anime_get_time(_anime) {
 	if (!is_struct(_anime)) return;
-	return _anime._get_position();
+	return _anime._get_time();
 }
 
 ///@desc	Gets the current value of the animation.
@@ -198,19 +199,19 @@ function anime_curve_lerp(_val1, _val2, _amount, _easing_curve, _curve_dir = ani
 		return animcurve_channel_evaluate(_channel, _amount);
 	}
 	
-	_amount = clamp(_amount, 0, 1);
-	var _channel = undefined;
-	
 	//built-in curves
-	if is_numeric(_easing_curve) {
+	if (is_numeric(_easing_curve)) {
 		var _curve = _curve_array[_easing_curve];
 		_easing_curve = _curve[0];
 		_curve_dir = _curve[1];
-	} else if is_string(_easing_curve) {
+	} else if (is_string(_easing_curve)) {
 		var _curve = _curve_struct[$ _easing_curve];
 		_easing_curve = _curve[0];
 		_curve_dir = _curve[1];
 	}
+	
+	_amount = clamp(_amount, 0, 1);
+	var _channel = undefined;
 	
 	//animcurve channel
 	if (!is_callable(_easing_curve)) {
@@ -236,30 +237,6 @@ function anime_curve_lerp(_val1, _val2, _amount, _easing_curve, _curve_dir = ani
 		return (_val2 - _val1) * (0.5 * _easing_curve(_s2 * _amount, _channel) * _s2 + 0.5) + _val1;
 	}
 }
-
-///@ignore
-//function __anime_curve_get_errors(_easing_curve) {
-//	static _curve_array = __anime_global()._curve_array;
-//	static _curve_struct = __anime_global()._curve_struct;
-//	
-//	if is_numeric(_easing_curve) { //built-in curve
-//		if (_easing_curve < 0 || _easing_curve > array_length(_curve_array) - 1) return "Easing curve index does not exist.";
-//		//if (_curve_array[_easing_curve] == undefined) return "Easing curve index does not exist.";
-//		return undefined;
-//	} else if is_string(_easing_curve) { //custom curve
-//		if (_curve_struct[$ _easing_curve] == undefined) return "Easing curve \"" + _easing_curve + "\" does not exist.";
-//		return undefined;
-//	} else if is_callable(_easing_curve) { //function
-//		return undefined;
-//	} else if (is_handle(_easing_curve) || is_struct(_easing_curve)) { //animcurve channel
-//		if animcurve_exists(_easing_curve) {
-//			if is_handle(_easing_curve) _easing_curve = animcurve_get(_easing_curve);
-//			if (array_length(_easing_curve.channels) <= 0) return "Animation curves must have at least one channel.";
-//		}
-//		return undefined;
-//	}
-//	return "Easing curve cannot be of type \"" + typeof(_easing_curve) + "\".";
-//}
 
 #endregion
 
@@ -397,39 +374,29 @@ function __anime_global() {
 ///@ignore
 function __anime_class(_def_val, _def_loop = false, _def_speed = 1, _def_method = undefined, _def_positions = undefined) constructor {
 	///@ignore
-	//static _error = function(_message) {
-	//	var _output = "ANIME: " + _message;
-	//	show_message(_output);
-	//	throw _output;
-	//}
-	
-	///@ignore
 	static _add = function(_val, _time, _easing_curve) {
-		//if (_time < 0) _error("Time cannot be less than 0.");
-		//var _message = __anime_curve_get_errors(_easing_curve);
-		//if (_message != undefined) _error(_message);
-		
 		_length += _time;
 		array_push(_positions, {
 			_val: _val,
-			_end_time: _length,
+			_time: _length,
 			_easing_curve: _easing_curve
 		});
 	}
 	
 	///@ignore
+	static _end = function() {
+		//avoid weird issues with 0 length animations
+		if (_length <= 0) _add(array_last(_positions)._val, 1, anime_curve.linear);
+	}
+	
+	///@ignore
 	static _start = function() {
-		var _val = _positions[0]._val;
-		_index = 0;
-		_val1 = _val;
-		_val2 = _val;
-		_start_time = 0;
-		_end_time = 0;
-		_easing_curve = 0;
-		
 		_state = anime_state_active;
 		_time = 0;
-		_current_val = _val1;
+		_index = 0;
+		_position1 = _positions[0];
+		_position2 = _position1;
+		_current_val = _position1._val;
 		_time_source ??= call_later(1, time_source_units_frames, method(self, _step), true);
 	}
 	
@@ -475,65 +442,50 @@ function __anime_class(_def_val, _def_loop = false, _def_speed = 1, _def_method 
 	}
 	
 	///@ignore
-	static _set_position = function(_new_time) {
+	static _set_time = function(_new_time) {
 		_time = _new_time;
 		
-		if (_length <= 0) {
-			_time = 0;
-			_current_val = array_last(_positions)._val;
-			return;
-		}
-		
-		while (_time >= _end_time) { //next position
+		while (_time >= _position2._time) { //next position
 			_index++;
 			if (_index >= array_length(_positions)) {
 				if (_loop) {
 					_index = 0;
 					_time = (_time - _length) % _length;
-					_end_time = 0;
 				} else {
-					_time = _end_time;
+					_time = _length;
+					_current_val = _position2._val;
 					_stop();
-					break;
+					return;
 				}
 			}
-			_val1 = _val2;
-			_start_time = _end_time;
-			var _position = _positions[_index];
-			_val2 = _position._val;
-			_end_time = _position._end_time;
-			_easing_curve = _position._easing_curve;
+			_position1 = _position2;
+			_position2 = _positions[_index];
 		}
 		
-		while (_time < _start_time) { //previous position
+		while (_time < _position1._time) { //previous position
 			_index--;
 			if (_index <= 0) {
 				if (_loop) {
-					_index = array_length(_positions) - 1;
-					_time = _time % _length + _length;
-					var _position = _positions[_index];
-					_val1 = _position._val;
-					_start_time = _position._end_time;
+					_index = array_length(_positions);
+					_time = (_time % _length + _length) % _length;
 				} else {
-					_time = _start_time;
+					_time = 0;
+					_current_val = _position1._val;
 					_stop();
-					break;
+					return;
 				}
 			}
-			_val2 = _val1;
-			_end_time = _start_time;
-			var _prev_pos = _positions[_index - 1];
-			_val1 = _prev_pos._val;
-			_start_time = _prev_pos._end_time;
-			_easing_curve = _prev_pos._easing_curve;
+			_position2 = _position1;
+			_position1 = _positions[_index - 1];
 		}
 		
-		var _amount = (_end_time > _start_time) ? ((_time - _start_time) / (_end_time - _start_time)) : 1;
-		_current_val = anime_curve_lerp(_val1, _val2, _amount, _easing_curve);
+		var _start_time = _position1._time;
+		var _amount = (_time - _start_time) / (_position2._time - _start_time);
+		_current_val = anime_curve_lerp(_position1._val, _position2._val, _amount, _position2._easing_curve);
 	}
 	
 	///@ignore
-	static _get_position = function() {
+	static _get_time = function() {
 		return _time;
 	}
 	
@@ -554,28 +506,23 @@ function __anime_class(_def_val, _def_loop = false, _def_speed = 1, _def_method 
 	
 	///@ignore
 	static _step = function(_frames = 1) {
-		_set_position(_time + _frames * _speed);
-		if (is_method(_call_method)) _call_method(_current_val);
+		_set_time(_time + _frames * _speed);
+		if (is_callable(_call_method)) _call_method(_current_val);
 	}
 	
 	/**@ignore*/ _loop = _def_loop;
 	/**@ignore*/ _speed = _def_speed;
 	/**@ignore*/ _call_method = _def_method;
-	/**@ignore*/ _positions = _def_positions ?? [{_val: _def_val, _end_time: 0, _easing_curve: 0}];
-	/**@ignore*/ _length = array_last(_positions)._end_time;
-	
-	var _val = _positions[0]._val;
-	/**@ignore*/ _index = 0;
-	/**@ignore*/ _val1 = _val;
-	/**@ignore*/ _val2 = _val;
-	/**@ignore*/ _start_time = 0;
-	/**@ignore*/ _end_time = 0;
-	/**@ignore*/ _easing_curve = 0;
+	/**@ignore*/ _positions = _def_positions ?? [{_val: _def_val, _time: 0, _easing_curve: 0}];
+	/**@ignore*/ _length = array_last(_positions)._time;
 	
 	/**@ignore*/ _state = anime_state_initial;
-	/**@ignore*/ _time = 0;
-	/**@ignore*/ _current_val = _val1;
 	/**@ignore*/ _time_source = undefined;
+	/**@ignore*/ _time = 0;
+	/**@ignore*/ _index = 0;
+	/**@ignore*/ _position1 = _positions[0];
+	/**@ignore*/ _position2 = _position1;
+	/**@ignore*/ _current_val = _position1._val;
 }
 
 #endregion
