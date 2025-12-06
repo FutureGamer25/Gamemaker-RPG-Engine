@@ -1,5 +1,5 @@
 #region cutscene testing
-/*
+
 //define cutscene
 cutscene = cutscene_begin();
 
@@ -11,16 +11,16 @@ cs_label("label");
 
 
 cs_branch_begin();
-//	scene_lerp(360, 0, 100, "", function(angle) {
-//		asd.image_angle = angle;
-//	});
+	cs_tween(360, 0, 100, anime_curve.linear, function(angle) {
+		asd.image_angle = angle;
+	});
 cs_branch_end();
-//scene_lerp(1, 2, 40, "", function(scale) {
-//	asd.image_xscale = scale;
-//});
-//scene_lerp(2, 1, 100, "", function(scale) {
-//	asd.image_xscale = scale;
-//});
+cs_tween(1, 2, 40, "linear", function(scale) {
+	asd.image_xscale = scale;
+});
+cs_tween(2, 1, 100, "linear", function(scale) {
+	asd.image_xscale = scale;
+});
 
 cs_time_units(cutscene_units_seconds);
 cs_func(function() {
@@ -30,9 +30,9 @@ cs_func(function() {
 cs_wait(0.3);
 
 cs_func(function() { cs_obj_move(asd, 30, 30, 2); });
-//scene_lerp(0, 360, 7, "cubic", function(angle) {
-//	asd.image_angle = angle;
-//});
+cs_tween(0, 360, 7, "cubic_out", function(angle) {
+	asd.image_angle = angle;
+});
 cs_func(function() {
 	cs_obj_move(asd, 60, 60, 2);
 	cs_wait(2);
@@ -46,7 +46,7 @@ cs_wait(10);
 cs_goto_label("label");
 
 cutscene_end();
-*/
+
 #endregion
 
 

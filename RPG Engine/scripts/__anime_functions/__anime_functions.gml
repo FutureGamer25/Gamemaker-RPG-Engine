@@ -13,9 +13,10 @@
 ///									The easing curve
 ///@param {Function} [call_method]	The method to call each frame (defaults to undefined)
 ///@return {Struct.__anime_class}
-function anime_do(_val1, _val2, _time, _easing_curve, _call_method = undefined) {
+function anime_tween(_val1, _val2, _time, _easing_curve, _call_method = undefined) {
 	var _anime = new __anime_class(_val1, false, 1, _call_method);
 	_anime._add(_val2, _time, _easing_curve);
+	_anime._start();
 	return _anime;
 }
 
@@ -38,10 +39,11 @@ function anime_begin(_val, _call_method = undefined) {
 ///@param {Real} [loop]				Whether to loop (defaults to false)
 ///@param {Real} [speed]			The speed multiplier (defaults to 1)
 ///@param {Function} [call_method]	The method to call each frame (defaults to undefined)
+///@param {Function} [stop_method]	The method to call when the animation stops (defaults to undefined)
 ///@return {Struct.__anime_class}
-function anime_begin_ext(_val, _auto_start = true, _loop = false, _speed = 1, _call_method = undefined) {
+function anime_begin_ext(_val, _auto_start = true, _loop = false, _speed = 1, _call_method = undefined, _stop_method = undefined) {
 	static _global = __anime_global();
-	var _anime = new __anime_class(_val, _loop, _speed, _call_method);
+	var _anime = new __anime_class(_val, _loop, _speed, _call_method, _stop_method);
 	_global._anime_current = _anime;
 	if (_auto_start) _anime._start();
 	return _anime;
@@ -110,10 +112,18 @@ function anime_set_speed(_anime, _speed) {
 	_anime._set_speed(_speed);
 }
 
-///@desc	Sets the callback method.
+///@desc	Sets the callback method. The method must take the current value in the animation as an argument.
 ///@param {Struct.__anime_class} anime	The anime instance
 ///@param {Function} call_method		The method to call each frame
 function anime_set_method(_anime, _call_method) {
+	if (!is_struct(_anime)) return;
+	_anime._set_method(_call_method);
+}
+
+///@desc	Sets the stop method. The method may optionally take the time remaining of the current step as an argument.
+///@param {Struct.__anime_class} anime	The anime instance
+///@param {Function} stop_method		The method to call when the animation stops
+function anime_set_stop_method(_anime, _stop_method) {
 	if (!is_struct(_anime)) return;
 	_anime._set_method(_call_method);
 }
@@ -134,7 +144,7 @@ function anime_get_time(_anime) {
 	return _anime._get_time();
 }
 
-///@desc	Gets the current value of the animation.
+///@desc	Gets the current value in the animation.
 ///@param {Struct.__anime_class} anime	The anime instance
 ///@return {Real}
 function anime_get_value(_anime) {
@@ -153,10 +163,10 @@ function anime_get_length(_anime) {
 ///@desc	Manually increments the animation and calls the callback method.
 ///			This function works even if the animation is paused or stopped.
 ///@param {Struct.__anime_class} anime	The anime instance
-///@param {Real} frames					The number of frames to increment the animation (defaults to 1)
+///@param {Real} delta_time				The number of frames to increment the animation (defaults to 1)
 ///@return {Real}
-function anime_step(_anime, _frames = 1) {
-	_anime._step(_frames);
+function anime_step(_anime, _delta_time = 1) {
+	_anime._step(_delta_time);
 }
 
 ///@desc	Returns a duplicate of the animation. Useful for running multiple of the same animation.
@@ -206,6 +216,11 @@ function anime_curve_lerp(_val1, _val2, _amount, _easing_curve, _curve_dir = ani
 		_curve_dir = _curve[1];
 	} else if (is_string(_easing_curve)) {
 		var _curve = _curve_struct[$ _easing_curve];
+		if (_curve == undefined) {
+			var _message = $"ANIME: Easing curve \"{_easing_curve}\" does not exist.";
+			show_message(_message);
+			throw _message;
+		}
 		_easing_curve = _curve[0];
 		_curve_dir = _curve[1];
 	}
@@ -372,7 +387,7 @@ function __anime_global() {
 }
 
 ///@ignore
-function __anime_class(_def_val, _def_loop = false, _def_speed = 1, _def_method = undefined, _def_positions = undefined) constructor {
+function __anime_class(_val, _loop = false, _speed = 1, _call_method = undefined, _stop_method = undefined, _positions = undefined) constructor {
 	///@ignore
 	static _add = function(_val, _time, _easing_curve) {
 		_length += _time;
@@ -401,12 +416,13 @@ function __anime_class(_def_val, _def_loop = false, _def_speed = 1, _def_method 
 	}
 	
 	///@ignore
-	static _stop = function() {
+	static _stop = function(_time_remaining = 0) {
 		_state = anime_state_stopped;
 		if (_time_source != undefined) {
 			call_cancel(_time_source);
 			_time_source = undefined;
 		}
+		if (is_callable(_stop_method)) _stop_method(_time_remaining);
 	}
 	
 	///@ignore
@@ -442,6 +458,11 @@ function __anime_class(_def_val, _def_loop = false, _def_speed = 1, _def_method 
 	}
 	
 	///@ignore
+	static _set_stop_method = function(_stop_method) {
+		self._stop_method = _stop_method;
+	}
+	
+	///@ignore
 	static _set_time = function(_new_time) {
 		_time = _new_time;
 		
@@ -452,9 +473,10 @@ function __anime_class(_def_val, _def_loop = false, _def_speed = 1, _def_method 
 					_index = 0;
 					_time = (_time - _length) % _length;
 				} else {
+					var _time_remaining = _time - _length;
 					_time = _length;
 					_current_val = _position2._val;
-					_stop();
+					_stop(_time_remaining);
 					return;
 				}
 			}
@@ -469,9 +491,10 @@ function __anime_class(_def_val, _def_loop = false, _def_speed = 1, _def_method 
 					_index = array_length(_positions);
 					_time = (_time % _length + _length) % _length;
 				} else {
+					var _time_remaining = -_time;
 					_time = 0;
 					_current_val = _position1._val;
-					_stop();
+					_stop(_time_remaining);
 					return;
 				}
 			}
@@ -501,7 +524,7 @@ function __anime_class(_def_val, _def_loop = false, _def_speed = 1, _def_method 
 	
 	///@ignore
 	static _clone = function() {
-		return new __anime_class(0, _loop, _speed, _call_method, _positions);
+		return new __anime_class(0, _loop, _speed, _call_method, _stop_method, _positions);
 	}
 	
 	///@ignore
@@ -510,17 +533,18 @@ function __anime_class(_def_val, _def_loop = false, _def_speed = 1, _def_method 
 		if (is_callable(_call_method)) _call_method(_current_val);
 	}
 	
-	/**@ignore*/ _loop = _def_loop;
-	/**@ignore*/ _speed = _def_speed;
-	/**@ignore*/ _call_method = _def_method;
-	/**@ignore*/ _positions = _def_positions ?? [{_val: _def_val, _time: 0, _easing_curve: 0}];
-	/**@ignore*/ _length = array_last(_positions)._time;
+	/**@ignore*/ self._loop = _loop;
+	/**@ignore*/ self._speed = _speed;
+	/**@ignore*/ self._call_method = _call_method;
+	/**@ignore*/ self._stop_method = _stop_method;
+	/**@ignore*/ self._positions = _positions ?? [{_val: _val, _time: 0, _easing_curve: 0}];
+	/**@ignore*/ _length = array_last(self._positions)._time;
 	
 	/**@ignore*/ _state = anime_state_initial;
 	/**@ignore*/ _time_source = undefined;
 	/**@ignore*/ _time = 0;
 	/**@ignore*/ _index = 0;
-	/**@ignore*/ _position1 = _positions[0];
+	/**@ignore*/ _position1 = self._positions[0];
 	/**@ignore*/ _position2 = _position1;
 	/**@ignore*/ _current_val = _position1._val;
 }

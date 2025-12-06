@@ -34,21 +34,21 @@ function cs_label(_label_name) {
 
 function cs_goto_label(_label_name) {
 	static _method = function(_label_name) {
-		cutscene_branch_goto_label(cutscene_get_current(), cutscene_branch_current, _label_name);
+		cutscene_goto_label(cutscene_branch_get_current(), _label_name);
 	}
 	cutscene_add_event_method(_method, _label_name);
 }
 
 function cs_stop() {
 	static _method = function() {
-		cutscene_branch_stop(cutscene_get_current(), cutscene_branch_current);
+		cutscene_stop(cutscene_branch_get_current());
 	}
 	cutscene_add_event_method(_method);
 }
 
 function cs_time_units(_time_units) {
 	static _method = function(_time_units) {
-		cutscene_branch_time_units(cutscene_get_current(), cutscene_branch_current, _time_units);
+		cutscene_time_units(cutscene_branch_get_current(), _time_units);
 	}
 	cutscene_add_event_method(_method, _time_units);
 }
@@ -59,12 +59,12 @@ function cs_branch_begin(_branch_name = "") {
 	cs_branch_begin_child(cutscene_branch_root, _branch_name);
 }
 
-function cs_branch_begin_child(_parent_branch, _branch_name = "") {
+function cs_branch_begin_child(_parent_branch_name, _branch_name = "") {
 	static _method = function(_parameters) {
-		cutscene_branch_start(cutscene_get_current(), _parameters[0], _parameters[1], _parameters[2]);
+		cutscene_create_branch(cutscene_get_branch(cutscene_get_current(), _parameters[0]), _parameters[1], _parameters[2]);
 	}
 	var _template = cutscene_template_create();
-	cutscene_add_event_method(_method, [_template, _parent_branch, _branch_name]);
+	cutscene_add_event_method(_method, [_parent_branch_name, _template, _branch_name]);
 	cutscene_template_begin(_template);
 }
 
@@ -74,12 +74,31 @@ function cs_branch_end() {
 #endregion
 
 #region anime
-function cs_anime_begin() {
+function cs_anime_begin(_val, _call_method) {
+	static _class = function(_anime) constructor {
+		self._anime = anime_clone(_anime);
+		
+		static _step = function(_dt) {
+			anime_step(_anime, _dt);
+		}
+	}
 	
+	var _anime = anime_begin_ext(_val, false, false, 1, _call_method, cutscene_event_next);
+	cutscene_add_event(_class, _anime);
 }
 
 function cs_anime_end() {
-	
+	anime_end();
+}
+
+function cs_anime_add(_val, _time, _easing_curve = anime_curve.linear) {
+	anime_add(_val, _time, _easing_curve);
+}
+
+function cs_tween(_val1, _val2, _time, _easing_curve, _call_method) {
+	cs_anime_begin(_val1, _call_method);
+	anime_add(_val2, _time, _easing_curve);
+	anime_end();
 }
 #endregion
 
@@ -87,8 +106,6 @@ function cs_wait(_time) {
 	static _class = function(_time) constructor {
 		_time_max = _time;
 		self._time = 0;
-		
-		static _create = function() {}
 		
 		static _step = function(_dt) {
 			_time += _dt;
@@ -115,8 +132,6 @@ function cs_obj_move(_object, _x, _y, _time) {
 		_y2 = _parameters._y;
 		_time_max = _parameters._time;
 		_time = 0;
-		
-		static _create = function() {}
 		
 		static _step = function(_dt) {
 			_time += _dt;
