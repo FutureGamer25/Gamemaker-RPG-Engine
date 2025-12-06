@@ -6,7 +6,7 @@
   "name":"__cutscene_functions",
   "parent":{
     "name":"Cutscenes",
-    "path":"folders/Cutscenes.yy",
+    "path":"folders/RPG Engine/Systems/Cutscenes.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",
