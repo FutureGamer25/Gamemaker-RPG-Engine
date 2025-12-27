@@ -11,14 +11,14 @@ cs_label("label");
 
 
 cs_branch_begin();
-	cs_tween(360, 0, 100, anime_curve.linear, function(angle) {
+	cs_anime_tween(360, 0, 100, anime_curve.linear, function(angle) {
 		asd.image_angle = angle;
 	});
 cs_branch_end();
-cs_tween(1, 2, 40, "linear", function(scale) {
+cs_anime_tween(1, 2, 40, "linear", function(scale) {
 	asd.image_xscale = scale;
 });
-cs_tween(2, 1, 100, "linear", function(scale) {
+cs_anime_tween(2, 1, 100, "linear", function(scale) {
 	asd.image_xscale = scale;
 });
 
@@ -30,7 +30,7 @@ cs_func(function() {
 cs_wait(0.3);
 
 cs_func(function() { cs_obj_move(asd, 30, 30, 2); });
-cs_tween(0, 360, 7, "cubic_out", function(angle) {
+cs_anime_tween(0, 360, 7, "cubic_in_out", function(angle) {
 	asd.image_angle = angle;
 });
 cs_func(function() {

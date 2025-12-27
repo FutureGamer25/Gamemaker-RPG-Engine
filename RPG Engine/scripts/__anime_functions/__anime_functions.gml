@@ -163,10 +163,10 @@ function anime_get_length(_anime) {
 ///@desc	Manually increments the animation and calls the callback method.
 ///			This function works even if the animation is paused or stopped.
 ///@param {Struct.__anime_class} anime	The anime instance
-///@param {Real} delta_time				The number of frames to increment the animation (defaults to 1)
+///@param {Real} frames					The number of frames to increment the animation (defaults to 1)
 ///@return {Real}
-function anime_step(_anime, _delta_time = 1) {
-	_anime._step(_delta_time);
+function anime_step(_anime, _frames = 1) {
+	_anime._step(_frames);
 }
 
 ///@desc	Returns a duplicate of the animation. Useful for running multiple of the same animation.
@@ -205,8 +205,8 @@ function anime_curve_lerp(_val1, _val2, _amount, _easing_curve, _curve_dir = ani
 	static _curve_array = __anime_global()._curve_array;
 	static _curve_struct = __anime_global()._curve_struct;
 	
-	static _animcurve_method = function(_amount, _channel) {
-		return animcurve_channel_evaluate(_channel, _amount);
+	static _animcurve_method = function(_amount, _parameter) {
+		return animcurve_channel_evaluate(_parameter, _amount);
 	}
 	
 	//built-in curves
@@ -226,30 +226,30 @@ function anime_curve_lerp(_val1, _val2, _amount, _easing_curve, _curve_dir = ani
 	}
 	
 	_amount = clamp(_amount, 0, 1);
-	var _channel = undefined;
+	var _parameter = undefined;
 	
 	//animcurve channel
 	if (!is_callable(_easing_curve)) {
 		if animcurve_exists(_easing_curve) {
 			_easing_curve = animcurve_get_channel(_easing_curve, 0);
 		}
-		_channel = _easing_curve;
+		_parameter = _easing_curve;
 		_easing_curve = _animcurve_method;
 	}
 	
 	switch (_curve_dir) {
 	default: //normal
-		return (_val2 - _val1) * _easing_curve(_amount, _channel) + _val1;
+		return (_val2 - _val1) * _easing_curve(_amount, _parameter) + _val1;
 	case anime_curve_dir.reverse: //reverse
-		return (_val1 - _val2) * _easing_curve(1 - _amount, _channel) + _val2;
+		return (_val1 - _val2) * _easing_curve(1 - _amount, _parameter) + _val2;
 	case anime_curve_dir.alternate: //normal-reverse
 		_amount = 2 * _amount - 1;
 		var _s1 = sign(_amount);
-		return (_val2 - _val1) * (0.5 * (1 - _easing_curve(1 - _s1 * _amount, _channel)) * _s1 + 0.5) + _val1;
+		return (_val2 - _val1) * (0.5 * (1 - _easing_curve(1 - _s1 * _amount, _parameter)) * _s1 + 0.5) + _val1;
 	case anime_curve_dir.alt_reverse: //reverse-normal
 		_amount = 2 * _amount - 1;
 		var _s2 = sign(_amount);
-		return (_val2 - _val1) * (0.5 * _easing_curve(_s2 * _amount, _channel) * _s2 + 0.5) + _val1;
+		return (_val2 - _val1) * (0.5 * _easing_curve(_s2 * _amount, _parameter) * _s2 + 0.5) + _val1;
 	}
 }
 

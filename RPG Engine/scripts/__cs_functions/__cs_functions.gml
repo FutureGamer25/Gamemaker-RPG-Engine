@@ -61,7 +61,7 @@ function cs_branch_begin(_branch_name = "") {
 
 function cs_branch_begin_child(_parent_branch_name, _branch_name = "") {
 	static _method = function(_parameters) {
-		cutscene_create_branch(cutscene_get_branch(cutscene_get_current(), _parameters[0]), _parameters[1], _parameters[2]);
+		cutscene_branch_create(cutscene_get_branch(cutscene_get_current(), _parameters[0]), _parameters[1], _parameters[2]);
 	}
 	var _template = cutscene_template_create();
 	cutscene_add_event_method(_method, [_parent_branch_name, _template, _branch_name]);
@@ -95,21 +95,35 @@ function cs_anime_add(_val, _time, _easing_curve = anime_curve.linear) {
 	anime_add(_val, _time, _easing_curve);
 }
 
-function cs_tween(_val1, _val2, _time, _easing_curve, _call_method) {
-	cs_anime_begin(_val1, _call_method);
-	anime_add(_val2, _time, _easing_curve);
-	anime_end();
+function cs_anime_tween(_val1, _val2, _time, _easing_curve, _call_method) {
+	static _class = function(_parameters) constructor {
+		_val1 = _parameters._val1;
+		_val2 = _parameters._val2;
+		_length = _parameters._time;
+		_time = 0;
+		_easing_curve = _parameters._easing_curve;
+		_call_method = _parameters._call_method;
+		
+		static _step = function(_dt) {
+			_time += _dt;
+			var _amount = min(_time / _length, 1);
+			_call_method(anime_curve_lerp(_val1, _val2, _amount, _easing_curve));
+			if (_time >= _length) cutscene_event_next(_time - _length);
+		}
+	}
+	
+	cutscene_add_event(_class, {_val1, _val2, _time, _easing_curve, _call_method});
 }
 #endregion
 
 function cs_wait(_time) {
 	static _class = function(_time) constructor {
-		_time_max = _time;
+		_length = _time;
 		self._time = 0;
 		
 		static _step = function(_dt) {
 			_time += _dt;
-			if (_time >= _time_max) cutscene_event_next(_time - _time_max);
+			if (_time >= _length) cutscene_event_next(_time - _length);
 		}
 	}
 	
@@ -130,16 +144,16 @@ function cs_obj_move(_object, _x, _y, _time) {
 		_y1 = _object.y;
 		_x2 = _parameters._x;
 		_y2 = _parameters._y;
-		_time_max = _parameters._time;
+		_length = _parameters._time;
 		_time = 0;
 		
 		static _step = function(_dt) {
 			_time += _dt;
-			var _amount = min(_time / _time_max, 1);
+			var _amount = min(_time / _length, 1);
 			_object.x = lerp(_x1, _x2, _amount);
 			_object.y = lerp(_y1, _y2, _amount);
 			
-			if (_time >= _time_max) cutscene_event_next(_time - _time_max);
+			if (_time >= _length) cutscene_event_next(_time - _length);
 		}
 	}
 	
