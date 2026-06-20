@@ -130,8 +130,8 @@ function load_all_data() {
 #endregion
 
 #region json
-function save_json(file_name, struct_or_array) {
-	var json = json_stringify(struct_or_array);
+function save_json(file_name, struct_or_array, prettify = false) {
+	var json = json_stringify(struct_or_array, prettify);
 	var file = file_text_open_write(file_name);
 	file_text_write_string(file, json);
 	file_text_close(file);
@@ -139,9 +139,9 @@ function save_json(file_name, struct_or_array) {
 
 function load_json(file_name) {
 	if (!file_exists(file_name)) return undefined;
-	var file = file_text_open_read(file_name);
-	var json = file_text_read_string(file);
-	file_text_close(file);
+	var buffer = buffer_load(file_name);
+	var json = buffer_read(buffer, buffer_string);
+	buffer_delete(buffer);
 	if (json = "") return undefined;
 	return json_parse(json);
 }
