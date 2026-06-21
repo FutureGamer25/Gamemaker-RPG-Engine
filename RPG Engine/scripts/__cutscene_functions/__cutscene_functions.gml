@@ -230,23 +230,28 @@ function __cutscene_class(_template) : __cutscene_branch_class(_template, undefi
 		_update_time_source();
 	}
 	
+	static _start_inherited = _start;
+	static _stop_inherited = _stop;
+	static _pause_inherited = _pause;
+	static _resume_inherited = _resume;
+	
 	static _start = function() {
-		_start_base();
+		_start_inherited();
 		_update_time_source();
 	}
 	
 	static _stop = function() {
-		_stop_base();
+		_stop_inherited();
 		_update_time_source();
 	}
 	
 	static _pause = function() {
-		_pause_base();
+		_pause_inherited();
 		_update_time_source();
 	}
 	
 	static _resume = function() {
-		_resume_base();
+		_resume_inherited();
 		_update_time_source();
 	}
 	
@@ -305,11 +310,6 @@ function __cutscene_branch_class(_template, _cutscene = undefined, _name = "") c
 		if (_state != cutscene_state_paused) return;
 		_state = cutscene_state_active;
 	}
-	
-	static _start_base = _start;
-	static _stop_base = _stop;
-	static _pause_base = _pause;
-	static _resume_base = _resume;
 	
 	static _set_speed = function(_speed) { self._speed = _speed; }
 	
